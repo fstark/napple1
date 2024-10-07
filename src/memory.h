@@ -18,12 +18,12 @@
  */
 #define FNAME_LEN_MAX   1024
 
-void loadBasic(void);
+void loadBasic(int silent);
 int loadMonitor(void);
 void resetMemory(void);
 unsigned char memRead(unsigned short address);
 void memWrite(unsigned short address, unsigned char value);
-void dumpCore(void);
+void dumpCore( const char *filename );
 int loadCore(void);
 int memMode(void);
 void flipMode(void);
