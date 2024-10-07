@@ -109,7 +109,7 @@ int memMode(void)
 	return mode;
 }
 
-void loadBasic(void)
+void loadBasic(int silent)
 {
 	FILE *fd = fopen(rombasic, "rb");
 	char input[MSG_LEN_MAX +1];
@@ -119,13 +119,18 @@ void loadBasic(void)
 		return;
 	}
 
-	gets_msgbuf("Load basic.rom to ram? y/n: ", input);
+	if (silent)
+		input[0] = 'y';
+	else
+		gets_msgbuf("Load basic.rom to ram? y/n: ", input);
 	if (input[0] == 'y') {
 		size_t s = fread(&mem[0xE000], 1, 4096, fd);
-		if (s) {
-			gets_msgbuf("Load completed: ", input);
-		} else {
-			gets_msgbuf("Load failed: ", input);
+		if (!silent) {
+			if (s) {
+				gets_msgbuf("Load completed: ", input);
+			} else {
+				gets_msgbuf("Load failed: ", input);
+			}
 		}
 	}
 
@@ -196,21 +201,27 @@ void memWrite(unsigned short address, unsigned char value)
 	return;
 }
 
-void dumpCore(void)
+void dumpCore( const char *filename )
 {
 	int i;
 	FILE *fd;
 	char input[MSG_LEN_MAX +1];
 	char corename[5 + MSG_LEN_MAX +1]; /* 'core/' + input string */
 
-	gets_msgbuf("Dump core. Filename: ", input);
+	if (filename) {
+		strcpy(input, filename);
+	} else {
+		gets_msgbuf("Dump core. Filename: ", input);
+	}
+
 	sprintf(corename, "core/%s", input);
 
 	fd = fopen(corename, "w");
 	for (i = 0; i <= MEMMAX; i++)
 		fputc(mem[i], fd);
 	fclose(fd);
-	gets_msgbuf("Dump core completed: ", input);
+	if (!filename)
+		gets_msgbuf("Dump core completed: ", input);
 }
 
 int loadCore(void)

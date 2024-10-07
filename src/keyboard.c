@@ -26,8 +26,10 @@
 #include "screen.h"
 
 #include <stdio.h>
+#include <stdlib.h>
 
 FILE *autotyping_file = NULL;
+int fastMode = 0;
 
 int startAutotyping(const char *filename)
 {
@@ -37,11 +39,53 @@ int startAutotyping(const char *filename)
 	return !!autotyping_file;
 }
 
+void autoCommands(void)
+{
+	int c;
+	while ((c = fgetc(autotyping_file))!=EOF)
+	{
+		switch (c)
+		{
+			case 'F':
+				fastMode = !fastMode;
+				break;
+			case 'B':
+				loadBasic(1);
+				resetPia6820();
+				resetM6502();
+				break;
+			case 'D':
+				char filename[256];
+				fscanf(autotyping_file, "%s", filename);
+				dumpCore( filename );
+				resetPia6820();
+				resetM6502();
+				break;
+			case 'M':
+				flipMode();
+				resetPia6820();
+				resetM6502();
+				break;
+			case 'Q':
+				exit( 0 ); /* Ugly */
+			case '\n':
+				return;
+		}
+	}
+}
+
 int nextAutotyping(void)
 {
 	if (!autotyping_file)
 		return -1;
-	int c = fgetc(autotyping_file);
+	int c;
+	do
+	{
+		c = fgetc(autotyping_file);
+		if (c=='\t')
+			autoCommands();
+	} while (c=='\t');
+
 	if (c!=EOF) {
 		if (c=='\n')
 			c = 0x0d;
@@ -69,12 +113,17 @@ int handleInput(void)
 	tmp = '\0';
 	while ( (tmp = getch_screen()) == '\0' )
 		;
-	if (tmp=='K') {
+	if (tmp == 'F')
+	{
+		fastMode = !fastMode;
+		return 1;
+	}
+	else if (tmp=='K') {
 		if (startAutotyping("AUTOTYPING.TXT"))
 			return 1;
 	}
 	else if (tmp == 'B') {
-		loadBasic();
+		loadBasic(0);
 		resetPia6820();
 		resetM6502();
 		return 1;
@@ -84,7 +133,7 @@ int handleInput(void)
 		resetM6502();
 		return 1;
 	} else if (tmp == 'D') {
-		dumpCore();
+		dumpCore( NULL );
 		resetPia6820();
 		resetM6502();
 		return 1;

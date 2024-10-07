@@ -61,7 +61,7 @@ void init_screen(void)
 	if (has_colors())
 	{
 		start_color();
-		init_pair(1, COLOR_GREEN, COLOR_BLACK);
+		init_pair(1, COLOR_WHITE, COLOR_BLACK);
 		wattron(screen, COLOR_PAIR(1));
 	}
 }	
@@ -96,6 +96,8 @@ void resetScreen(void)
 	updateScreen();
 }
 
+extern int fastMode;
+
 static void synchronizeOutput(void)
 {
 	int processed; /* processed real time in u sec */
@@ -114,6 +116,9 @@ static void synchronizeOutput(void)
 	 */  
 	delay = 1000000 / 60 - processed;
 	if (delay < 0)
+		delay = 0;
+
+	if (fastMode)
 		delay = 0;
 	usleep((unsigned int)delay); 
 
