@@ -24,9 +24,10 @@
 #include "memory.h"
 #include "keyboard.h"
 #include "screen.h"
-
+#include "msgbuf.h"
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 FILE *autotyping_file = NULL;
 int fastMode = 0;
@@ -55,12 +56,13 @@ void autoCommands(void)
 				resetM6502();
 				break;
 			case 'D':
-				char filename[256];
+			{	char filename[256];
 				fscanf(autotyping_file, "%s", filename);
 				dumpCore( filename );
 				resetPia6820();
 				resetM6502();
 				break;
+			}
 			case 'M':
 				flipMode();
 				resetPia6820();
@@ -119,7 +121,11 @@ int handleInput(void)
 		return 1;
 	}
 	else if (tmp=='K') {
-		if (startAutotyping("AUTOTYPING.TXT"))
+		char input[MSG_LEN_MAX +1];
+		gets_msgbuf("Autotype file. Filename: ", input);
+		if (!input[0])
+			strcpy( input, "AUTOTYPE.TXT" );
+		if (startAutotyping(input))
 			return 1;
 	}
 	else if (tmp == 'B') {
