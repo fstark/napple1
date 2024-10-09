@@ -23,57 +23,41 @@
 #include "screen.h"
 
 static unsigned char _dspCr = 0, _dsp = 0, _kbdCr = 0, _kbd = 0;
-static int kbdInterrups = 0, dspOutput = 0;
 
 void resetPia6820(void)
 {
-	kbdInterrups = dspOutput = 0;
-	_kbdCr = _dspCr = 0;
-}
-
-void setKdbInterrups(int b)
-{
-	kbdInterrups = b;
-}
-
-int getKbdInterrups(void)
-{
-	return kbdInterrups;
-}
-
-int getDspOutput(void)
-{
-	return dspOutput;
+	_kbdCr = _dspCr = 0xA7;
+	_kbdCr = 0x27;
 }
 
 void writeDspCr(unsigned char dspCr)
 {
-	if (!dspOutput && dspCr >= 0x80)
-		dspOutput = 1;
-	else
-		_dspCr = dspCr;
+	_dspCr = dspCr;
 }
 
 void writeDsp(unsigned char dsp)
 {
-	if (dsp >= 0x80)
-		dsp -= 0x80;
+	_dsp = dsp | 0x80;			//	Will be catched by updateDisplay
+}
 
-	outputDsp(dsp);
-	_dsp = dsp;
+void updateDisplay()
+{
+	if (_dsp&0x80)
+	{
+		outputDsp(_dsp&0x7f);	//	Output char on screen
+		_dsp &= 0x7f;			//	Dsp is available
+	}
+}
+
+void keyPressed(unsigned char key)
+{
+	_kbd = key|0x80;
+	_kbdCr = 0xA7;		// bit 8 to 1 means there is a key
 }
 
 void writeKbdCr(unsigned char kbdCr)
 {
-	if (!kbdInterrups && kbdCr >= 0x80)
-		kbdInterrups = 1;
-	else
-		_kbdCr = kbdCr;
-}
-
-void writeKbd(unsigned char kbd)
-{
-	_kbd = kbd;
+	_kbdCr = kbdCr;
 }
 
 unsigned char readDspCr(void)
@@ -88,13 +72,6 @@ unsigned char readDsp(void)
 
 unsigned char readKbdCr(void)
 {
-	if (kbdInterrups && _kbdCr >= 0x80)
-	{
-		_kbdCr = 0;
-
-		return 0xA7;
-	}
-
 	return _kbdCr;
 }
 

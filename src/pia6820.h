@@ -26,8 +26,10 @@ int getDspOutput(void);
 void writeDspCr(unsigned char dspCr);
 void writeDsp(unsigned char dsp);
 void writeKbdCr(unsigned char kbdCr);
-void writeKbd(unsigned char kbd);
 unsigned char readDspCr(void);
 unsigned char readDsp(void);
 unsigned char readKbdCr(void);
 unsigned char readKbd(void);
+void keyPressed(unsigned char key);
+
+void updateDisplay();

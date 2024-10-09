@@ -24,4 +24,5 @@ void init_msgbuf(void);
 void print_msgbuf(char *string);
 void gets_msgbuf(char *prompt, char *typed);
 
-#define MSG_LEN_MAX 40
+#define MSG_LEN_MAX 256
+

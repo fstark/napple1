@@ -28,16 +28,35 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "commands.h"
 
 FILE *autotyping_file = NULL;
-int fastMode = 0;
+const char *autotyping_ptr = NULL;
+#define MAX_AUTO_TYPE 2048
+char autotyping_buffer[MAX_AUTO_TYPE+1];
+int fastCpu = 0;
+int fastDsp = 0;
 
-int startAutotyping(const char *filename)
+int startAutotypingFile(const char *filename)
 {
-	if (autotyping_file)
+	if (isAutotyping())
 		stopAutotyping();
 	autotyping_file = fopen(filename, "r");
 	return !!autotyping_file;
+}
+
+int startAutotypingBuffer( const char *buffer )
+{
+	if (isAutotyping())
+		stopAutotyping();
+	strcpy( autotyping_buffer, buffer );
+	autotyping_ptr = autotyping_buffer;
+	return 1;
+}
+
+int isAutotyping(void)
+{
+	return autotyping_file || autotyping_ptr;
 }
 
 void autoCommands(void)
@@ -48,7 +67,8 @@ void autoCommands(void)
 		switch (c)
 		{
 			case 'F':
-				fastMode = !fastMode;
+				fastCpu = 1;
+				fastDsp = 1;
 				break;
 			case 'B':
 				loadBasic(1);
@@ -76,10 +96,26 @@ void autoCommands(void)
 	}
 }
 
-int nextAutotyping(void)
+int nextAutotypingBuffer(void)
 {
-	if (!autotyping_file)
-		return -1;
+	int c;
+	c = *autotyping_ptr++;
+
+	if (c)
+	{
+		if (c=='\n')
+			c = 0x0d;
+		if (c>='a' && c<='z')
+			c = c - 'a' + 'A';
+		keyPressed(c);
+	}
+	else
+		stopAutotyping();
+	return c;
+}
+
+int nextAutotypingFile(void)
+{
 	int c;
 	do
 	{
@@ -93,12 +129,20 @@ int nextAutotyping(void)
 			c = 0x0d;
 		if (c>='a' && c<='z')
 			c = c - 'a' + 'A';
-		writeKbd((unsigned char)(c + 0x80));
-		writeKbdCr(0xA7); 
+		keyPressed(c);
 	}
 	else
 		stopAutotyping();
 	return c;
+}
+
+int nextAutotyping(void)
+{
+	if (autotyping_file)
+		return nextAutotypingFile();
+	if (autotyping_ptr)
+		return nextAutotypingBuffer();
+	return 0;
 }
 
 void stopAutotyping(void)
@@ -106,6 +150,7 @@ void stopAutotyping(void)
 	if (autotyping_file)
 		fclose(autotyping_file);
 	autotyping_file = NULL;
+	autotyping_ptr = NULL;
 }
 
 int handleInput(void)
@@ -117,7 +162,14 @@ int handleInput(void)
 		;
 	if (tmp == 'F')
 	{
-		fastMode = !fastMode;
+		fastCpu = 1;
+		fastDsp = 1;
+		return 1;
+	}
+	if (tmp == 'S')
+	{
+		fastCpu = 0;
+		fastDsp = 0;
 		return 1;
 	}
 	else if (tmp=='K') {
@@ -125,7 +177,7 @@ int handleInput(void)
 		gets_msgbuf("Autotype file. Filename: ", input);
 		if (!input[0])
 			strcpy( input, "AUTOTYPE.TXT" );
-		if (startAutotyping(input))
+		if (startAutotypingFile(input))
 			return 1;
 	}
 	else if (tmp == 'B') {
@@ -160,6 +212,10 @@ int handleInput(void)
 		resetPia6820();
 		resetM6502();
 		return 1;
+	} else if (tmp == 'T') {
+		extern int traceCPU;
+		traceCPU = !traceCPU;
+		return 1;
 	} else if (tmp == '\n') {
 		tmp = '\r';
 	} else if (tmp == '\b') {
@@ -167,9 +223,16 @@ int handleInput(void)
 	} else if (tmp >= 'a' && tmp <= 'z') {
 		tmp = tmp - 'a' + 'A';
 	}
+	else if (tmp==0x1b)
+	{
+		char command[256];
+		gets_msgbuf("> ", command);
+		executeCommandString(command);
+		return 1;
+	}
 
-	writeKbd((unsigned char)(tmp + 0x80));
-	writeKbdCr(0xA7); 
+	trace_printf( "GOT A KEY: %02X\n", tmp );
+	keyPressed(tmp);
 
 	return 1;
 }

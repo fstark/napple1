@@ -1,3 +1,5 @@
+#include <stdint.h>
+
 /* napple1 ncurses Apple 1 emulator
  * Copyright (C) 2008 Nobu Hatano
  *
@@ -25,3 +27,4 @@ void resetM6502(void);
 void setSpeed(int freq, int synchroMillis);
 void setIRQ(int state);
 void setNMI(void);
+void setProgramCounter( uint16_t pc );
