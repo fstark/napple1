@@ -97,32 +97,6 @@ void resetScreen(void)
 	updateScreen();
 }
 
-static void synchronizeOutput(void)
-{
-	int processed; /* processed real time in u sec */
-	int delay; /* delay u sec to be added to real time */
-	struct timeval t;
-      
-	gettimeofday(&t, NULL);
-	processed = (int)(t.tv_usec + t.tv_sec * 1000000 
-			  - interval_start);
-	if (processed < 0)
-		processed = 0;
-
-	/* Video output refreshes screen by 60 Hz. 
-	 * In real time, it takes 1 sec / 60 hz. 
-	 * So, 1000000 usec / 60 hz. 
-	 */  
-	delay = 1000000 / 60 - processed;
-	if (delay < 0)
-		delay = 0;
-
-	usleep((unsigned int)delay); 
-
-	gettimeofday(&t, NULL);
-	interval_start = (long long)(t.tv_usec + t.tv_sec * 1000000);
-}
-
 static void newLine(void)
 {
 	int i;
@@ -167,8 +141,6 @@ void outputDsp(unsigned char dsp)
 	}
 
 	updateScreen();
-
-	// synchronizeOutput();
 }
 
 void select_screen(void)
