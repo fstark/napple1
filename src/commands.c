@@ -120,7 +120,7 @@ int executeExec( int argc, const char **argv )
 
 int executeCommandFile( const char *filename )
 {
-    const char **argv[] = { "exec", filename, NULL };
+    const char *argv[] = { "exec", filename, NULL };
     return executeExec( 2, argv );
 }
 
