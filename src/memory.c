@@ -147,7 +147,7 @@ int loadRom( unsigned char startPage, const char *romfile, long start, long len 
 	int i;
 
 	if (!fd) {
-		fprintf(stderr, "Failed to open %s\n", romfile);
+		trace_printf(stderr, "Failed to open %s\n", romfile);
 		perror("fopen");
 		return -1;
 	}
@@ -383,7 +383,7 @@ void resetMemory(void)
 	memset(mem, 0, 0x10000 - 256); /* rom is within tail 256b */
 }
 
-const uint8_t *getMemoryPtr( uint16_t address )
+uint8_t *getMemoryPtr( uint16_t address )
 {
 	return mem+address;
 }

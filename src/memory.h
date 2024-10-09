@@ -41,12 +41,13 @@ int loadMonitor(void);
 void resetMemory(void);
 void resetMemType();
 void fillMemType( unsigned char start, int len, eMemType type );
+int loadRom( unsigned char startPage, const char *romfile, long start, long len );
 int loadRom32( const char *rom32, uint16_t config );
 void dumpMem( void );
 
 
 
-const uint8_t *getMemoryPtr( uint16_t address );
+uint8_t *getMemoryPtr( uint16_t address );
 unsigned char memPeek(unsigned short address);
 unsigned char memRead(unsigned short address);
 void memWrite(unsigned short address, unsigned char value);
