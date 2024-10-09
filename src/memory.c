@@ -147,7 +147,7 @@ int loadRom( unsigned char startPage, const char *romfile, long start, long len 
 	int i;
 
 	if (!fd) {
-		trace_printf(stderr, "Failed to open %s\n", romfile);
+		trace_printf( "Failed to open %s\n", romfile);
 		perror("fopen");
 		return -1;
 	}
@@ -321,35 +321,6 @@ eMode memMode(void)
 	return mode;
 }
 
-void loadBasic(int silent)
-{
-	FILE *fd = fopen(rombasic, "rb");
-	char input[MSG_LEN_MAX +1];
-	
-	if (!fd) {
-		gets_msgbuf("Failed to open basic.rom", input);
-		return;
-	}
-
-	if (silent)
-		input[0] = 'y';
-	else
-		gets_msgbuf("Load basic.rom to ram? y/n: ", input);
-	if (input[0] == 'y') {
-		size_t s = fread(&mem[0xE000], 1, 4096, fd);
-		if (!silent) {
-			if (s) {
-				gets_msgbuf("Load completed: ", input);
-			} else {
-				gets_msgbuf("Load failed: ", input);
-			}
-		}
-	}
-
-	fclose(fd);
-	return;
-}
-
 const char *modeName()
 {
 	static const char *modes[] =
@@ -360,27 +331,6 @@ const char *modeName()
 	if (mode<sizeof(modes)/sizeof(modes[0]))
 		res = modes[mode];
 	return res;
-}
-
-int loadMonitor(void)
-{
-	FILE *fd = fopen(rommonitor, "rb");
-
-	if (fd) {
-		fread(&mem[0xFF00], 1, 256, fd);
-		fclose(fd);
-	}
-	else{
-		return 0;
-	}
-
-	return 1;
-}
-
-void resetMemory(void)
-{
-	/* #### Need to have a ROM mode */
-	memset(mem, 0, 0x10000 - 256); /* rom is within tail 256b */
 }
 
 uint8_t *getMemoryPtr( uint16_t address )
@@ -503,25 +453,3 @@ int loadCore(void)
 			mem[i] = buf[i];
 	return 1;
 }
-
-/* set ROM file name using ROMDIR env variable
- * default path is ./rom 
- * need to be called before loadBasic() and loadMonitor()
- */
-void setRomFiles(void)
-{
-    char env[FNAME_LEN_MAX];
-    char *p;
-
-    strcpy(rombasic, "rom/basic.rom");
-    strcpy(rommonitor, "rom/monitor.rom");
-
-    p = env;
-    if (getenv("ROMDIR")) {
-        p = getenv("ROMDIR");
-        sprintf(rombasic, "%s/basic.rom", p);
-        sprintf(rommonitor, "%s/monitor.rom", p);
-    } 
-}
-
-

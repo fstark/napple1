@@ -27,8 +27,9 @@
 #include "keyboard.h"
 #include "screen.h"
 #include "msgbuf.h"
+#include "commands.h"
 
-int main()
+int main( int argc, char **argv )
 {
 	/* initialize ncurse */
 	initscr(); 
@@ -42,21 +43,17 @@ int main()
 	resetScreen();
 	setSpeed(1000000, 50); /* 1M Hz. Sync emulation every 50 msec */
 
-    /* set Rom Files */
-    setRomFiles();
-
-	/* Load monitor rom */
-	if (!loadMonitor()) {
-		print_msgbuf("Failed loading rom/monitor.rom");
-		endwin();
-		return 0;
-	}
-	resetMemory();
-
 	/* start processor */
 	resetM6502();
 	startM6502();
 	atexit(stopM6502);
+
+	if (argc>1)
+		if (executeCommandFile(argv[1]))
+		{
+			fprintf( stderr, "Failed to execute boot file\n" );
+			exit(1);
+		}
 
 	while (handleInput());
 

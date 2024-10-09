@@ -36,8 +36,6 @@ typedef enum {
     MEM_UNALOCATED
 } eMemType;
 
-void loadBasic(int silent);
-int loadMonitor(void);
 void resetMemory(void);
 void resetMemType();
 void fillMemType( unsigned char start, int len, eMemType type );
