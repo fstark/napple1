@@ -48,10 +48,12 @@ int main( int argc, char **argv )
 	startM6502();
 	atexit(stopM6502);
 
+	executeCommandFile( "boot.cmd" );
+
 	if (argc>1)
 		if (executeCommandFile(argv[1]))
 		{
-			fprintf( stderr, "Failed to execute boot file\n" );
+			fprintf( stderr, "Failed to execute file\n" );
 			exit(1);
 		}
 

@@ -20,6 +20,7 @@ Originally, napple1 is a fork of pom1, to curses.
 * Integrated dissassembler
 * Memory dump
 * Configuration files (init boot script)
+* Replaced menu by key bindings (in boot.cmd file)
 
 ## TODO
 
@@ -35,3 +36,11 @@ Go in [the samples subdirectory](samples/README.md) for more information on how 
 Go in [the basic subdirectory](basic/README.md) for more information on how to use the scripts to convert a text file with a BASIC program into a binary file that can be loaded into the Apple1.
 
 Go in [the rom32 subdirectory](rom32/README.md) for more information on how to emulate a Silicon Insider RAM/ROM card.
+
+## BUGS
+
+There is a freeze sometimes, unsure what can trigger it
+Error tracing is pretty bad
+Errors don't go back to the UI (need the trace file)
+Commands don't check their arguments
+Hexadecimal numbers are case-sensitive
