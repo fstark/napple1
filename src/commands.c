@@ -118,6 +118,12 @@ int executeExec( int argc, const char **argv )
 	return 0;		// All commands succeeded
 }
 
+int executeCommandFile( const char *filename )
+{
+    const char **argv[] = { "exec", filename, NULL };
+    return executeExec( 2, argv );
+}
+
 int executeMemory( int argc, const char **argv )
 {
     if (!strcmp(argv[1],"reset"))

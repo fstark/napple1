@@ -59,43 +59,6 @@ int isAutotyping(void)
 	return autotyping_file || autotyping_ptr;
 }
 
-void autoCommands(void)
-{
-	int c;
-	while ((c = fgetc(autotyping_file))!=EOF)
-	{
-		switch (c)
-		{
-			case 'F':
-				fastCpu = 1;
-				fastDsp = 1;
-				break;
-			case 'B':
-				loadBasic(1);
-				resetPia6820();
-				resetM6502();
-				break;
-			case 'D':
-			{	char filename[256];
-				fscanf(autotyping_file, "%s", filename);
-				dumpCore( filename );
-				resetPia6820();
-				resetM6502();
-				break;
-			}
-			case 'M':
-				flipMode();
-				resetPia6820();
-				resetM6502();
-				break;
-			case 'Q':
-				exit( 0 ); /* Ugly */
-			case '\n':
-				return;
-		}
-	}
-}
-
 int nextAutotypingBuffer(void)
 {
 	int c;
@@ -117,12 +80,8 @@ int nextAutotypingBuffer(void)
 int nextAutotypingFile(void)
 {
 	int c;
-	do
-	{
-		c = fgetc(autotyping_file);
-		if (c=='\t')
-			autoCommands();
-	} while (c=='\t');
+	
+	c = fgetc(autotyping_file);
 
 	if (c!=EOF) {
 		if (c=='\n')
