@@ -30,6 +30,7 @@
 #include <sys/time.h>
 
 #include "screen.h"
+#include "memory.h"
 
 static unsigned char screenTbl[40 * 24];
 static int indexX, indexY;
@@ -96,8 +97,6 @@ void resetScreen(void)
 	updateScreen();
 }
 
-extern int fastMode;
-
 static void synchronizeOutput(void)
 {
 	int processed; /* processed real time in u sec */
@@ -118,8 +117,6 @@ static void synchronizeOutput(void)
 	if (delay < 0)
 		delay = 0;
 
-	if (fastMode)
-		delay = 0;
 	usleep((unsigned int)delay); 
 
 	gettimeofday(&t, NULL);
@@ -140,19 +137,10 @@ static void newLine(void)
 
 void outputDsp(unsigned char dsp)
 {
+	// trace_printf("DISPLAY: %02X '%c'\n", dsp, dsp);
+
 	switch (dsp)
 	{
-	case 0x5F:
-		if (indexX == 0)
-		{
-			indexY--;
-			indexX = ncol-1;
-		}
-		else
-			indexX--;
-
-		screenTbl[indexY * ncol + indexX] = 0;
-		break;
 	case 0x0A:
 	case 0x0D:
 		indexX = 0;
@@ -180,7 +168,7 @@ void outputDsp(unsigned char dsp)
 
 	updateScreen();
 
-	synchronizeOutput();
+	// synchronizeOutput();
 }
 
 void select_screen(void)

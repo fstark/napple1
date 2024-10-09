@@ -26,10 +26,12 @@
 #include <time.h>
 #include <stdlib.h>
 #include <pthread.h>
+#include <stdio.h>
 
 #include "m6502.h"
 #include "pia6820.h"
 #include "memory.h"
+#include "disassemble.h"
 
 #define N 0x80
 #define V 0x40
@@ -42,11 +44,12 @@
 
 static unsigned char accumulator, xRegister, yRegister, statusRegister = I, stackPointer;
 static int IRQ = 0, NMI = 0;
-static unsigned short programCounter;
+static unsigned short volatile programCounter;
 static unsigned char btmp;
 static unsigned short op, opH, opL, ptr, ptrH, ptrL, tmp;
 static pthread_t thread;
 static int cycles;
+static int nextCursor = 1;	// next sync of video
 
 /* sync is a synchronization between real time and ideal time of apple 1 */
 static int sync_cycles; /* cycles per 1 sync */
@@ -73,7 +76,10 @@ static void synchronize(void)
 	delay = sync_interval - processed;
 	if (delay < 0)
 		delay = 0;
-	usleep((unsigned int)(delay * 1000)); /* m sec to u sec */
+	
+	extern int fastCpu;
+	if (!fastCpu)
+		usleep((unsigned int)(delay * 1000)); /* m sec to u sec */
 
 	gettimeofday(&t, NULL);
 	interval_start = (long long)(t.tv_usec / 1000 
@@ -828,8 +834,53 @@ static void Hang(void)
 	programCounter--;
 }
 
+int traceCPU = 0;
+volatile int stopRequest = 0;
+volatile int stopped = 0;
+volatile int running = 0;
+
+int isTraced( uint16_t adrs )
+{
+	if ((adrs&0xff00)==0xff00)
+		return 0;
+	return 1;
+}
+
 static void executeOpcode(void)
 {
+	running = 1;
+
+	if (stopRequest)
+		stopped = 1;
+
+	if (stopped)
+		return;
+	
+	if (traceCPU && isTraced(programCounter))
+	{	
+		uint8_t buf[3];
+
+		buf[0] = memPeek(programCounter);
+		buf[1] = memPeek(programCounter+1);
+		buf[2] = memPeek(programCounter+2);
+		trace_printf( "%02X %d:", readKbdCr(), cycles );
+		trace_printf( "%s\n", disassemble(programCounter,buf) );
+	}
+
+		//	We emulate video by reading a character and clearing the DSP at every "cursor"
+		//	We only support a single cursor, as there is no way to do multiple cursors on an Apple1
+	// trace_printf( "Cycles %d nextCursor %d\n", cycles, nextCursor );
+	if (cycles>nextCursor)
+	{
+		updateDisplay();
+		extern int fastDsp;
+		if (fastDsp)
+			nextCursor += 10;
+		else
+			nextCursor += 1000000/60;
+//		trace_printf( "at %ld, next display at %ld in %ld\n", cycles, nextCursor, nextCursor-cycles );
+	}
+
 	unsigned char opcode = memRead(programCounter++);
 
 	switch (opcode)
@@ -1764,9 +1815,9 @@ static int runM6502(void *data)
 	{
 		synchronize();
 		
-		cycles = 0;
+		int delta = cycles;
 
-		while (cycles < sync_cycles)
+		while (cycles-delta < sync_cycles)
 		{
 			if (!(statusRegister & I) && IRQ)
 				handleIRQ();
@@ -1803,9 +1854,22 @@ void stopM6502(void)
 
 void resetM6502(void)
 {
+	if (running)
+	{
+		stopRequest = 1;
+		while (!stopped)
+			;
+		stopRequest = 0;
+	}
+
 	statusRegister |= I;
 	stackPointer = 0xFF;
 	programCounter = memReadAbsolute(0xFFFC);
+
+	trace_tid();
+	trace_printf( "reset: %04x\n", programCounter);
+
+	stopped = 0;
 }
 
 /* freq      Processr clock speed in Hz 
@@ -1826,4 +1890,9 @@ void setIRQ(int state)
 void setNMI(void)
 {
 	NMI = 1;
+}
+
+void setProgramCounter( uint16_t pc )
+{
+	programCounter = pc;
 }

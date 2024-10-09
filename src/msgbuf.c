@@ -38,8 +38,8 @@ void print_msgbuf(char *s)
 
 	if ((int)strlen(s) < 1)
 		sprintf(msg, 
-			"Basic Dump Load Reset Hard Quit Mode %2dK",
-			memMode());
+			"Basic Dump Load Reset Hard Quit Mode %s",
+			modeName());
 	else
 		sprintf(msg, 
 			"%-40s", 
