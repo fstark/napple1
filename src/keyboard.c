@@ -160,75 +160,37 @@ int handleInput(void)
 	tmp = '\0';
 	while ( (tmp = getch_screen()) == '\0' )
 		;
-	if (tmp == 'F')
-	{
-		fastCpu = 1;
-		fastDsp = 1;
-		return 1;
-	}
-	if (tmp == 'S')
-	{
-		fastCpu = 0;
-		fastDsp = 0;
-		return 1;
-	}
-	else if (tmp=='K') {
-		char input[MSG_LEN_MAX +1];
-		gets_msgbuf("Autotype file. Filename: ", input);
-		if (!input[0])
-			strcpy( input, "AUTOTYPE.TXT" );
-		if (startAutotypingFile(input))
-			return 1;
-	}
-	else if (tmp == 'B') {
-		loadBasic(0);
-		resetPia6820();
-		resetM6502();
-		return 1;
-	} else if (tmp == 'L') {
-		loadCore();
-		resetPia6820();
-		resetM6502();
-		return 1;
-	} else if (tmp == 'D') {
-		dumpCore( NULL );
-		resetPia6820();
-		resetM6502();
-		return 1;
-	} else if (tmp == 'R') {
-		resetPia6820();
-		resetM6502();
-		return 1;
-	} else if (tmp == 'H') {
- 		resetScreen();
-		resetPia6820();
-		resetMemory();
-		resetM6502();
-		return 1;
-	} else if (tmp == 'Q') {
+	if (tmp == 'Q')
+	{	// Quit
 		return 0;
-	} else if (tmp == 'M') {
-		flipMode();
+	}
+	if (tmp==0x1b)
+	{	// Command mode
+		char command[256];
+		gets_msgbuf("> ", command);
+		executeCommandString(command);
+		return 1;
+	}
+	if (tmp == 'R')
+	{
+		// Reset
 		resetPia6820();
 		resetM6502();
 		return 1;
-	} else if (tmp == 'T') {
+	}
+	if (tmp == 'T')
+	{
+		// Trace
 		extern int traceCPU;
 		traceCPU = !traceCPU;
 		return 1;
-	} else if (tmp == '\n') {
+	}
+	if (tmp == '\n') {
 		tmp = '\r';
 	} else if (tmp == '\b') {
 		tmp = 0x5f;
 	} else if (tmp >= 'a' && tmp <= 'z') {
 		tmp = tmp - 'a' + 'A';
-	}
-	else if (tmp==0x1b)
-	{
-		char command[256];
-		gets_msgbuf("> ", command);
-		executeCommandString(command);
-		return 1;
 	}
 
 	trace_printf( "GOT A KEY: %02X\n", tmp );

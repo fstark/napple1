@@ -37,9 +37,7 @@ void print_msgbuf(char *s)
 	char msg[MSG_LEN_MAX + 1]; 
 
 	if ((int)strlen(s) < 1)
-		sprintf(msg, 
-			"Basic Dump Load Reset Hard Quit Mode %s",
-			modeName());
+		sprintf(msg, "ESC Trace Reset Quit");
 	else
 		sprintf(msg, 
 			"%-40s", 

@@ -1,0 +1,5 @@
+*.o
+core/
+trace.txt
+napple1
+.vscode/
