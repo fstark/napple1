@@ -17,12 +17,12 @@ Originally, napple1 is a fork of pom1, to curses.
 * Extraction of tokenized basic programs.
 * Use ESC key to go in command mode
 * Batch commands
-* Integrated dissasembler
+* Integrated dissassembler
 * Memory dump
+* Configuration files (init boot script)
 
 ## TODO
 
-* Configuration files (init boot script)
 * Extend core format for additional configurations (usure if useful)
 * Auto-reload of ROMs when the are changed (unsure if useful, maybe a watch file command would be better)
 * Support for 512K rom card with bank switching
