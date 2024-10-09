@@ -29,3 +29,9 @@ Originally, napple1 is a fork of pom1, to curses.
 * Breakpoints
 * Support symbolic debugging
 * Curses removal ?
+
+Go in [the samples subdirectory](samples/README.md) for more information on how to use the scripts to start the Apple1 with different configurations.
+
+Go in [the basic subdirectory](basic/README.md) for more information on how to use the scripts to convert a text file with a BASIC program into a binary file that can be loaded into the Apple1.
+
+Go in [the rom32 subdirectory](rom32/README.md) for more information on how to emulate a Silicon Insider RAM/ROM card.

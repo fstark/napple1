@@ -149,6 +149,14 @@ int executeMemory( int argc, const char **argv )
 
         return 0;
     }
+    if (!strcmp(argv[1],"rom"))
+    {
+        const char *romfile = argv[2];
+        int addr;
+        if (sscanf(argv[3],"%x",&addr) != 1)
+            return -1;
+        return loadRom( addr/256, romfile, 0, 0 );
+    }
     if (!strcmp(argv[1],"rom32k"))
     {
         const char *filename = argv[2];
@@ -219,7 +227,7 @@ int executeCpu( int argc, const char **argv )
     }
     if (!strcmp(argv[1],"jump"))
     {
-        uint16_t adrs;
+        int adrs;
         sscanf(argv[2],"%x",&adrs);
         setProgramCounter( adrs );
         return 0;
@@ -281,7 +289,7 @@ int executeHelp( int argc, const char **argv );
 command_t commands[] = {
 	{ "help", executeHelp, "displays list of commands" },
 	{ "mode", executeMode, "mode [cpu|display] [default|fast]" },
-	{ "memory", executeMemory, "memory reset (all memory is unallocated)\nmemory ram start end (allocate RAM)\nmemory rom32k <file> <jumpers> (load a 32KRAM/ROM image)" },
+	{ "memory", executeMemory, "memory reset (all memory is unallocated)\nmemory ram start end (allocate RAM)\nmemory rom <file> address (loads rom in memory)\nmemory rom32k <file> <jumpers> (load a 32KRAM/ROM image)" },
 	{ "type", executeType, "type [-sync] (@<filename>|string) - type the contents of a string or file" },
 	{ "exec", executeExec, "exec <file> - execute a command file" },
     { "trace", executeTrace, "trace [on|off] - turn on or off CPU tracing" },
@@ -353,6 +361,7 @@ int executeCommandString( const char *command )
     int argc = 0;
     char *token = cmd;
 
+    // not nice: we should do the escape handling with the tokenizing
     while (*token)
     {
         // Skip leading whitespace
@@ -367,12 +376,28 @@ int executeCommandString( const char *command )
             // Skip the quote
             token++;
             argv[argc++] = token;
+            char *p = token;
+            char c;
             // Find the end of the token
-            while (*token && *token != '"')
-                token++;
-            if (!*token)
+
+            do
+            {
+                c = *p++;
+                if (c=='\\')
+                {
+                    c = *p++;
+                    if (c=='n')
+                        c = '\n';
+                    if (c==0)
+                        p--;
+                }
+                else
+                    if (c=='\"')
+                        c = 0;
+                *token++ = c;
+            }   while (c);
+            if (!*p)
                 break;
-            *token++ = 0;
         }
         else
         {
@@ -387,19 +412,22 @@ int executeCommandString( const char *command )
     }
 
     // Handle escape sequences
-    for (int i = 0; i < argc; i++) {
-        char *src = (char *)argv[i];
-        char *dst = src;
-        while (*src) {
-            if (*src == '\\' && *(src + 1) == 'n') {
-                *dst++ = '\n';
-                src += 2;
-            } else {
-                *dst++ = *src++;
-            }
-        }
-        *dst = '\0';
-    }
+    // for (int i = 0; i < argc; i++) {
+    //     char *src = (char *)argv[i];
+    //     char *dst = src;
+    //     while (*src) {
+    //         if (*src == '\\' && *(src + 1) == 'n') {
+    //         *dst++ = '\n';
+    //         src += 2;
+    //         } else if (*src == '\\' && *(src + 1) == '"') {
+    //         *dst++ = '"';
+    //         src += 2;
+    //         } else {
+    //         *dst++ = *src++;
+    //         }
+    //     }
+    //     *dst = '\0';
+    // }
 	argv[argc] = NULL; // Ensure the array is NULL-terminated
 
 	//	Execute the command
