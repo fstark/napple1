@@ -200,16 +200,6 @@ extern int traceCPU;
 
 int executeTrace( int argc, const char **argv )
 {
-    if (!strcmp(argv[1],"on"))
-    {
-        traceCPU = 1;
-        return 0;
-    }
-    if (!strcmp(argv[1],"off"))
-    {
-        traceCPU = 0;
-        return 0;
-    }
     return -1;
 }
 
@@ -238,6 +228,19 @@ int executeCpu( int argc, const char **argv )
         setProgramCounter( adrs );
         return 0;
     }
+    if (!strcmp(argv[1],"trace"))
+    {
+        if (!strcmp(argv[2],"on"))
+        {
+            traceCPU = 1;
+            return 0;
+        }
+        if (!strcmp(argv[2],"off"))
+        {
+            traceCPU = 0;
+            return 0;
+        }
+    }  
     return -1;
 }
 
@@ -290,6 +293,28 @@ int executeBload( int argc, const char **argv )
     return 0;
 }
 
+const char *keyTable[256];
+
+// bind key command
+int executeBind( int argc, const char **argv )
+{
+    if (argc < 3)
+        return -1;
+    int key = argv[1][0];
+    keyTable[key] = strdup( argv[2] );
+    return 0;
+}
+
+int isBound( int key )
+{
+    return keyTable[key] != NULL;
+}
+
+const char *getBoundCommand( int key )
+{
+    return keyTable[key];
+}
+
 int executeHelp( int argc, const char **argv );
 
 command_t commands[] = {
@@ -298,11 +323,11 @@ command_t commands[] = {
 	{ "memory", executeMemory, "memory reset (all memory is unallocated)\nmemory ram start end (allocate RAM)\nmemory rom <file> address (loads rom in memory)\nmemory rom32k <file> <jumpers> (load a 32KRAM/ROM image)" },
 	{ "type", executeType, "type [-sync] (@<filename>|string) - type the contents of a string or file" },
 	{ "exec", executeExec, "exec <file> - execute a command file" },
-    { "trace", executeTrace, "trace [on|off] - turn on or off CPU tracing" },
-    { "cpu", executeCpu, "cpu [start|stop|reset] - start, stop or reset the CPU" },
+    { "cpu", executeCpu, "cpu [start|stop|reset|trace on|trace off] - start, stop, reset or trace the CPU" },
     { "sleep", executeSleep, "sleep <ms> - sleep for a number of milliseconds" },
     { "bsave", executeBsave, "bsave <file> <start> <length> - save memory to a binary file (numbers in hex)" },
     { "bload", executeBload, "bload <file> <start> - load memory from a binary file (numbers in hex)" },
+    { "bind", executeBind, "bind <key> <command> - bind a key to a command" },
 	{ "quit", executeQuit, "exit the emulator" },
 };
 

@@ -119,10 +119,21 @@ int handleInput(void)
 	tmp = '\0';
 	while ( (tmp = getch_screen()) == '\0' )
 		;
+
+	if (isBound(tmp))
+	{
+		const char *command = getBoundCommand(tmp);
+		if (command)
+			executeCommandString(command);
+		return 1;
+	}
+
+/*
 	if (tmp == 'Q')
 	{	// Quit
 		return 0;
 	}
+*/
 	if (tmp==0x1b)
 	{	// Command mode
 		char command[256];
@@ -130,6 +141,7 @@ int handleInput(void)
 		executeCommandString(command);
 		return 1;
 	}
+/*
 	if (tmp == 'R')
 	{
 		// Reset
@@ -144,6 +156,7 @@ int handleInput(void)
 		traceCPU = !traceCPU;
 		return 1;
 	}
+*/
 	if (tmp == '\n') {
 		tmp = '\r';
 	} else if (tmp == '\b') {

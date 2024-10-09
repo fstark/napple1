@@ -841,8 +841,8 @@ volatile int running = 0;
 
 int isTraced( uint16_t adrs )
 {
-	if ((adrs&0xff00)==0xff00)
-		return 0;
+	// if ((adrs&0xff00)==0xff00)
+	// 	return 0;
 	return 1;
 }
 

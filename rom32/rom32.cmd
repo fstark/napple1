@@ -18,4 +18,9 @@ type ?
 mode cpu fast
 mode display fast
 
-; Done
+sleep 200
+
+; Default perf
+mode cpu default
+mode display default
+
