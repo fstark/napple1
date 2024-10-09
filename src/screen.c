@@ -35,7 +35,6 @@
 static unsigned char screenTbl[40 * 24];
 static int indexX, indexY;
 static WINDOW *screen;
-static long long interval_start; /* interval start time in u sec */
 
 int nrow, ncol;
 
