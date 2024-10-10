@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include "rom512.h"
 
 // The command table
 // The first element of each command is the command name
@@ -196,6 +197,50 @@ int executeMemory( int argc, const char **argv )
     return 0;
 }
 
+int executeRom512( int argc, const char **argv )
+{
+    // rom512 load <file>
+    if (!strcmp(argv[1],"load"))
+    {
+        const char *filename = argv[2];
+        if (loadRom512( filename ))
+            rom512kpresent = 1;
+        else
+            rom512kpresent = 0;
+        fillMemType( 0x20, 0x80-0x20, MEM_ROM );
+        fillMemType( 0x80, 0xa0-0x80, MEM_ROM );
+        fillMemType( 0xe0, 0xf0-0xe0, MEM_ROM );
+        copyBank512( 0, getMemoryPtr(0) );
+        return 0;
+    }
+
+    // rom512 release
+    if (!strcmp(argv[1],"release"))
+    {
+        releaseRom512();
+
+        fillMemType( 0x20, 0x80-0x20, MEM_UNALOCATED );
+        fillMemType( 0x80, 0xa0-0x80, MEM_UNALOCATED );
+        fillMemType( 0xe0, 0xf0-0xe0, MEM_UNALOCATED );
+
+        return 0;
+    }
+
+    // rom512 bank <n>
+    if (!strcmp(argv[1],"bank"))
+    {
+        int bank = atoi( argv[2] );
+        if (bank<0 || bank>15)
+            return -1;
+
+        copyBank512( bank, getMemoryPtr(0) );
+
+        return 0;
+    }
+
+    return -1;
+}
+
 extern int traceCPU;
 
 int executeTrace( int argc, const char **argv )
@@ -328,6 +373,7 @@ command_t commands[] = {
     { "bsave", executeBsave, "bsave <file> <start> <length> - save memory to a binary file (numbers in hex)" },
     { "bload", executeBload, "bload <file> <start> - load memory from a binary file (numbers in hex)" },
     { "bind", executeBind, "bind <key> <command> - bind a key to a command" },
+    { "rom512", executeRom512, "rom512 load <file> - load a 512K ROM image" },
 	{ "quit", executeQuit, "exit the emulator" },
 };
 
