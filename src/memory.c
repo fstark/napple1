@@ -229,20 +229,44 @@ void dumpMem( void )
 	//	 Loop over all memory pages and print the type
 	for (int i=0;i!=256;i++)
 	{
-		trace_printf( "%02x: %s\n", i, s_memType[i]==MEM_RAM ? "RAM" : s_memType[i]==MEM_ROM ? "ROM" : "UNALLOCATED" );
+		trace_printf( "%02x: %s ", i, s_memType[i]==MEM_RAM ? "RAM" : s_memType[i]==MEM_ROM ? "ROM" : "UNALLOCATED" );
 
 		// print content of page in hex, address followed by 16 bytes per line
-		trace_printf( "type: %d\n", s_memType[i] );
 		if (s_memType[i]==MEM_RAM || s_memType[i]==MEM_ROM)
-			for (int j=0;j!=256;j+=16)
+		{
+			// Check if the 256 bytes are not all the same
+			int same = 1;
+			for (int j=1;j!=256;j++)
 			{
-				trace_printf( "%04x: ", i*256+j );
-				for (int k=0;k!=16;k++)
+				if (mem[i*256]!=mem[i*256+j])
 				{
-					trace_printf( "%02x ", mem[i*256+j+k] );
+					same = 0;
+					break;
 				}
-				trace_printf( "\n" );
 			}
+
+			if (same)
+			{
+				trace_printf( "(256*%02x)\n", mem[i*256] );
+			}
+			else
+			{
+				trace_printf( "\n" );
+				for (int j=0;j!=256;j+=16)
+				{
+					trace_printf( "%04x: ", i*256+j );
+					for (int k=0;k!=16;k++)
+					{
+						trace_printf( "%02x ", mem[i*256+j+k] );
+					}
+					trace_printf( "\n" );
+				}
+			}
+		}
+		else
+		{
+			trace_printf( "\n" );
+		}
 	}
 }
 
