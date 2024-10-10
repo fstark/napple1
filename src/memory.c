@@ -247,7 +247,7 @@ void dumpMem( void )
 
 			if (same)
 			{
-				trace_printf( "(256*%02x)\n", mem[i*256] );
+				trace_printf( "%02x * 256\n", mem[i*256] );
 			}
 			else
 			{
