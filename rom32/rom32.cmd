@@ -2,17 +2,19 @@
 memory reset
 memory ram 0000 1FFF
 
-; Loads a siliconinsider 32K rom that maps in addresses 5xxx, 7xxx to Cxxx, Exxx and Fxxx
-memory rom32k rom32/silicrom.rom 5789abcef
+memory rom rom/monitor.rom ff00
+
+; Loads a siliconinsider 32K rom that maps in addresses 2000-9fff, with mirror at e000-efff
+memory rom32k rom32/silicrom.rom 23456789e
 
 ; Reboot
 cpu reset
 
+; Go to hardware display
+type "2000R\n?"
+
 ; Wait for ROM to kick in
 sleep 500
-
-; Go to harware display
-type ?
 
 ; Goes in fast mode
 mode cpu fast

@@ -15,8 +15,8 @@ endif
 
 all: ../napple1
 
-../napple1: m6502.o memory.o pia6820.o screen.o keyboard.o main.o msgbuf.o disassemble.o commands.o
-	$(CC) $(CFLAGS) -o ../napple1 m6502.o memory.o pia6820.o screen.o msgbuf.o keyboard.o main.o disassemble.o commands.o $(THREAD) $(CURSES)
+../napple1: m6502.o memory.o pia6820.o screen.o keyboard.o main.o msgbuf.o disassemble.o commands.o rom512.o
+	$(CC) $(CFLAGS) -o ../napple1 m6502.o memory.o pia6820.o screen.o msgbuf.o keyboard.o main.o disassemble.o commands.o rom512.o $(THREAD) $(CURSES)
 m6502.o: m6502.c m6502.h pia6820.h memory.h disassemble.h
 	$(CC) $(CFLAGS) -o m6502.o -c m6502.c
 memory.o: memory.c pia6820.h memory.h pia6820.h screen.h 
@@ -35,6 +35,8 @@ disassemble.o: disassemble.c disassemble.h
 	$(CC) $(CFLAGS) -o disassemble.o  -c disassemble.c
 commands.o: commands.c commands.h
 	$(CC) $(CFLAGS) -o commands.o  -c commands.c
+rom512.o: rom512.c rom512.h
+	$(CC) $(CFLAGS) -o rom512.o  -c rom512.c
 clean: 
 	-rm *.o
 	-rm ../napple1

@@ -85,16 +85,20 @@
 #include "screen.h"
 #include "msgbuf.h"
 #include "keyboard.h"
+#include "rom512.h"
 
 #define MEMMAX 0xFFFF
 #define FNAME_LEN_MAX 1024
 
 static unsigned char mem[65536];
 
+// #### killme!
 static eMode mode = APPLE1_8K; /* 8 = Apple I 8K mode, 32 = napple1 32K mode */
-
 char rombasic[FNAME_LEN_MAX];
 char rommonitor[FNAME_LEN_MAX];
+
+int rom512kpresent = 0;
+
 
 eMemType s_memType[256];	/* Type of all memory pages */
 
@@ -338,13 +342,25 @@ uint8_t *getMemoryPtr( uint16_t address )
 	return mem+address;
 }
 
+void bank512( uint16_t adrs )
+{
+	if (adrs>=0xa000 && adrs<0xc000)
+	{
+		int bank = adrs&0xf;
+        copyBank512( bank, mem );
+	}
+}
+
 unsigned char memPeek( unsigned short address )
 {
+	bank512( address );
 	return mem[address];
 }
 
 unsigned char memRead(unsigned short address)
 {
+	bank512( address );
+
 	if (address == 0xD010)
 	{
 		unsigned char c = readKbd();
@@ -382,6 +398,8 @@ int isRom(unsigned short address)
 
 void memWrite(unsigned short address, unsigned char value)
 {
+	bank512( address );
+
 	if (isRam(address))
 		mem[address] = value;
 	else if (address == 0xD013)

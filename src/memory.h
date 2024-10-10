@@ -36,6 +36,8 @@ typedef enum {
     MEM_UNALOCATED
 } eMemType;
 
+extern int rom512kpresent;
+
 void resetMemory(void);
 void resetMemType();
 void fillMemType( unsigned char start, int len, eMemType type );
