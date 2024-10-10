@@ -40,11 +40,17 @@ void writeDsp(unsigned char dsp)
 	_dsp = dsp | 0x80;			//	Will be catched by updateDisplay
 }
 
+#include "memory.h"
+
 void updateDisplay()
 {
 	if (_dsp&0x80)
 	{
-		outputDsp(_dsp&0x7f);	//	Output char on screen
+		int c = _dsp&0x7f;
+		if (c>='a' && c<='z')
+			c -= 'a'-'A';	//	Convert to uppercase
+		outputDsp(c);	//	Output char on screen (remove bit 7, remove lowercase)
+
 		_dsp &= 0x7f;			//	Dsp is available
 	}
 }
