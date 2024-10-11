@@ -68,7 +68,7 @@ static int byteCount[N_A+1] = {
     1  // N_A (not applicable)
 };
 
-const char *disassemble( uint16_t pc, const uint8_t *mem )
+const char *disassemble( uint16_t pc, const uint8_t *mem, int *len )
 {
     static char buffer[256];
     char mem_buffer[256];
@@ -137,6 +137,9 @@ const char *disassemble( uint16_t pc, const uint8_t *mem )
     }
 
     sprintf( buffer, "%04X: %s   %s %s", (int)pc, mem_buffer, opcodes[opcode], operands );
+
+    if (len)
+        *len = byteCount[addressing[opcode]];
 
     return buffer;
 }
