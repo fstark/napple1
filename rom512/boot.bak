@@ -1,0 +1,105 @@
+* = $2000
+
+ECHO = $FFEF
+KBD   = $D010	; Keyboard I/O
+KBDCR = $D011
+
+TMP = $00
+PTR = $01
+
+TRAMPRAM = $300
+
+MAIN:
+    JSR COPYTRAMP
+
+    JSR PRINTINLINE
+    .byte $d,$d,$d
+    .byte "1 - Compilation of utilities and demos",$d
+    .byte "2 - Wozdle",$d
+    .byte "> "
+    .byte 0
+
+    JSR KBDGET
+    STA TMP
+    CLC
+    JSR ECHO
+    LDA #$A0
+    STA TMP+1
+    LDY #$0
+    JMP TRAMPRAM
+
+TRAMPOLINE:
+    LDA (TMP),Y     ; Switch to page
+    JMP $2000       ; Jump to the main code
+END_TRAMPOLINE:
+
+COPYTRAMP:
+    LDA TRAMPOLINE
+    STA TRAMPRAM
+    LDA TRAMPOLINE+1
+    STA TRAMPRAM+1
+    LDA TRAMPOLINE+2
+    STA TRAMPRAM+2
+    LDA TRAMPOLINE+3
+    STA TRAMPRAM+3
+    LDA TRAMPOLINE+4
+    STA TRAMPRAM+4
+    RTS
+
+; ---------------------------------------------------------------------------------
+; Reads a character
+; ---------------------------------------------------------------------------------
+KBDGET:
+.(
+    LDA KBDCR
+    BPL KBDGET
+    LDA KBD
+    AND #$7F
+    RTS
+.)
+
+
+;-----------------------------------------------------------------------------
+; Prints the string that is stored after the JSR instruction that sent us here
+; Input:
+;   Data stored in the code after the jsr instruction
+;-----------------------------------------------------------------------------
+PRINTINLINE:
+.(
+	PLA
+	STA PTR
+	PLA
+	STA PTR+1
+	JSR INCPTR
+	LDY #0
+PRINTLOOP:
+	LDA (PTR),Y
+	BEQ PRINTDONE
+    JSR ECHO
+	JSR INCPTR
+	JMP PRINTLOOP
+
+PRINTDONE:
+	LDA PTR+1
+	PHA
+	LDA PTR
+	PHA
+	RTS
+.)
+
+;-----------------------------------------------------------------------------
+; Increments PTR
+; Input:
+;  ZP:PTR, ZP:PTR+1
+; Output:
+;  ZP:PTR, ZP:PTR+1 is incremented
+;-----------------------------------------------------------------------------
+INCPTR:
+.(
+	CLC
+	INC PTR
+	BNE DONE
+	INC PTR+1
+DONE:
+	RTS
+.)

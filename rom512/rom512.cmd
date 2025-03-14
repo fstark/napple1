@@ -3,17 +3,21 @@ memory reset
 memory ram 0000 1FFF
 
 ; Loads wozmon
-memory rom rom/monitor.rom ff00
+memory rom machines/WOZMON ff00
+;disas ff00 ffff
 
 ; Loads a siliconinsider 512K rom
-rom512 load rom512/sample.rom
+;rom512 load rom512/sample.rom
+rom512 load rom512/512KA1COMPIL.BIN
 rom512 bank 0
 
-type -sync "5000R\n"
-sleep 1000
-cpu reset
+sym load rom512/WOZDLE.SYM 2000 9FFF
 
-type -sync "A002\n"
-type -sync "5000R\n"
-sleep 1000
-cpu reset
+;type -sync "2000R\n"
+;sleep 1000
+;cpu reset
+
+; type -sync "A002\n"
+; type -sync "5000R\n"
+;sleep 1000
+;cpu reset

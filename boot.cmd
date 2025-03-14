@@ -7,7 +7,9 @@ bind F "mode cpu fast"
 bind S "mode cpu default"
 
 ; 8K ram machine
-exec "machines/4+4k.cmd"
+exec "machines/32k.cmd"
 
 ; Reboot
 cpu reset
+
+bload /tmp/wozdle.o65 2000

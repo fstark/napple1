@@ -41,7 +41,7 @@ extern int rom512kpresent;
 void resetMemory(void);
 void resetMemType();
 void fillMemType( unsigned char start, int len, eMemType type );
-int loadRom( unsigned char startPage, const char *romfile, long start, long len );
+int loadRom( unsigned char startPage, const char *romfile, uint16_t *startAdrs, uint16_t *endAdrs );
 int loadRom32( const char *rom32, uint16_t config );
 void dumpMem( void );
 
@@ -53,11 +53,7 @@ unsigned char memRead(unsigned short address);
 void memWrite(unsigned short address, unsigned char value);
 void dumpCore( const char *filename );
 int loadCore(void);
-eMode memMode(void);
-void flipMode(void);
 eMemType memType(unsigned char page);
-void setMode(eMode mode);
-const char *modeName();
 void setRomFiles(void);
 
 // move me

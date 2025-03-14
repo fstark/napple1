@@ -21,6 +21,7 @@
  */
 #include "pia6820.h"
 #include "screen.h"
+#include "memory.h"
 
 static unsigned char _dspCr = 0, _dsp = 0, _kbdCr = 0, _kbd = 0;
 
@@ -37,15 +38,16 @@ void writeDspCr(unsigned char dspCr)
 
 void writeDsp(unsigned char dsp)
 {
-	_dsp = dsp | 0x80;			//	Will be catched by updateDisplay
+//	trace_printf( "writeDsp: %02X\n", dsp );
+	_dsp = dsp | 0x80;			//	Will be printed by updateDisplay
 }
-
-#include "memory.h"
 
 void updateDisplay()
 {
 	if (_dsp&0x80)
 	{
+		// trace_printf( "updateDisplay: %02X\n", _dsp );
+		//	#### There are other things to check for to be sure we only display apple1 characters
 		int c = _dsp&0x7f;
 		if (c>='a' && c<='z')
 			c -= 'a'-'A';	//	Convert to uppercase

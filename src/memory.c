@@ -92,11 +92,6 @@
 
 static unsigned char mem[65536];
 
-// #### killme!
-static eMode mode = APPLE1_8K; /* 8 = Apple I 8K mode, 32 = napple1 32K mode */
-char rombasic[FNAME_LEN_MAX];
-char rommonitor[FNAME_LEN_MAX];
-
 int rom512kpresent = 0;
 
 
@@ -144,8 +139,17 @@ void resetMemType()
 	fillMemType( 0, 256, MEM_UNALOCATED );
 }
 
-int loadRom( unsigned char startPage, const char *romfile, long start, long len )
+int loadRom( unsigned char startPage, const char *romfile, uint16_t *startAdrs, uint16_t *endAdrs )
 {
+	int start = 0;
+	int len = 0;
+
+	if (startAdrs)
+		start = *startAdrs;
+
+	if (endAdrs)
+		len = *endAdrs-start;
+
 	// printf( "loadRom: %s $%02x %ld %ld\n", romfile, startPage, start, len );
 	FILE *fd = fopen(romfile, "rb");
 	int i;
@@ -189,6 +193,11 @@ int loadRom( unsigned char startPage, const char *romfile, long start, long len 
 	}
 
 	fclose(fd);
+
+	if (startAdrs)
+		*startAdrs = start;
+
+	if (endAdrs)
 
 	return 0;
 }
@@ -276,7 +285,9 @@ int loadRom32Page( const char *rom32, int page4k )
 	if (offset>=32768)
 		offset -= 32768;
 	trace_printf( "loadRom32Page: %s $%04x %d\n", rom32, page4k, offset );
-	return loadRom( page4k/256, rom32, offset, 4096 );
+	uint16_t start = offset;
+	uint16_t end = start+4096;
+	return loadRom( page4k/256, rom32, &start, &end );
 }
 
 /* Loads a 32K rom according to a map configuration */
@@ -290,75 +301,6 @@ int loadRom32( const char *rom32, uint16_t config )
 	}
 
 	return 0;
-}
-
-void flipMode(void)
-{
-	int newMode = mode + 1;
-	if (newMode == LAST_MODE)
-		newMode = APPLE1_4K;
-
-	setMode( newMode );	
-
-	/* update message buffer */
-	print_msgbuf("");
-}
-
-void setMode( eMode aMode )
-{
-	if (mode < LAST_MODE)
-	{
-		mode = aMode;
-		resetMemType();
-		switch (mode)
-		{
-			case APPLE1_4K:
-				fillMemType( 0, 16, MEM_RAM );
-				loadRom( 0xFF, rommonitor, 0, 0 );
-				break;
-			case APPLE1_8K:
-				fillMemType( 0, 32, MEM_RAM );
-				loadRom( 0xFF, rommonitor, 0, 0 );
-				break;
-			case APPLE1_4_4K:
-				fillMemType( 0, 16, MEM_RAM );
-				fillMemType( 0xE0, 16, MEM_RAM );
-				loadRom( 0xFF, rommonitor, 0, 0 );
-				break;
-			case APPLE1_32K:
-				fillMemType( 0, 128, MEM_RAM );
-				loadRom( 0xFF, rommonitor, 0, 0 );
-				break;
-			case CUSTOM:
-				fillMemType( 0, 32, MEM_RAM );
-				// .... .5.7 89ab c.ef
-				// 0000 0101 1111 1011
-				// 1101 1111 1010 0000
-				// DFA0
-				// loadRom32( "silicrom.rom", 0xdfa0 );
-				loadRom32( "eliza.rom", 0xdfe0 );
-				break;
-			default:
-				break;
-		}
-	}
-}
-
-eMode memMode(void) 
-{
-	return mode;
-}
-
-const char *modeName()
-{
-	static const char *modes[] =
-	{
-		"4K", "8K", "4+4", "32K"
-	};
-	const char *res = "???";
-	if (mode<sizeof(modes)/sizeof(modes[0]))
-		res = modes[mode];
-	return res;
 }
 
 uint8_t *getMemoryPtr( uint16_t address )
@@ -480,14 +422,6 @@ int loadCore(void)
 	} else {
 		gets_msgbuf("Failed to open core file: ", input);
 		return 0;
-	}
-
-	/* 0xF000 is unused area of 8K mode or
-	 * ROM area of 32K mode. So,  if 0xF000 has a value,
-	 * The mode should better change to 32K mode.
-	 */
-	if ((buf[0xF000] != 0) && (memMode() == 8)) {
-		setMode( APPLE1_32K );
 	}
 
 	for (i = 0; i <= 0xFFFF; i++)

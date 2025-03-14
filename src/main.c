@@ -28,8 +28,9 @@
 #include "screen.h"
 #include "msgbuf.h"
 #include "commands.h"
+#include <string.h>
 
-int main( int argc, char **argv )
+int main( int argc, const char **argv )
 {
 	/* initialize ncurse */
 	initscr(); 
@@ -51,11 +52,18 @@ int main( int argc, char **argv )
 	executeCommandFile( "boot.cmd" );
 
 	if (argc>1)
-		if (executeCommandFile(argv[1]))
+	{
+		if (!strcmp(argv[1], "-c"))
+		{
+			if (argc>2)
+				executeCommand( argc-2, argv+2 );
+		}
+		else if (executeCommandFile(argv[1]))
 		{
 			fprintf( stderr, "Failed to execute file\n" );
 			exit(1);
 		}
+	}
 
 	while (handleInput());
 

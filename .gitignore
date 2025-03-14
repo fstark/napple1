@@ -3,3 +3,4 @@ core/
 trace.txt
 napple1
 .vscode/
+.DS_Store

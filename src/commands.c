@@ -7,6 +7,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "rom512.h"
+#include "disassemble.h"
+#include "symbols.h"
 
 // The command table
 // The first element of each command is the command name
@@ -52,29 +54,13 @@ int executeQuit( int argc, const char **argv )
 	exit( 0 );
 }
 
-int executeMode( int argc, const char **argv )
+int executeDisplay( int argc, const char **argv )
 {
     extern int fastCpu;
     extern int fastDsp;
 
-	if (argc < 3)
-		return -1;
 	argv++;
-	if (!strcmp(*argv,"cpu"))
-	{
-        argv++;
-		if (!strcmp(*argv,"fast"))
-		{
-			fastCpu = 1;
-			return 0;
-		}
-		if (!strcmp(*argv,"default"))
-		{
-			fastCpu = 0;
-			return 0;
-		}
-	}
-	if (!strcmp(*argv,"display"))
+	if (!strcmp(*argv,"speed"))
 	{
         argv++;
 		if (!strcmp(*argv,"fast"))
@@ -88,6 +74,7 @@ int executeMode( int argc, const char **argv )
 			return 0;
 		}
 	}
+
 	return -1;
 }
 
@@ -156,13 +143,22 @@ int executeMemory( int argc, const char **argv )
 
         return 0;
     }
+    //  #### Should be using "bload" (which should be "memory load")
     if (!strcmp(argv[1],"rom"))
     {
         const char *romfile = argv[2];
         int addr;
         if (sscanf(argv[3],"%x",&addr) != 1)
             return -1;
-        return loadRom( addr/256, romfile, 0, 0 );
+        
+        uint16_t startAdrs = 0;
+        uint16_t endAdrs = 0;
+        if (loadRom( addr/256, romfile, &startAdrs, &endAdrs )==0)
+        {    if (tryLoadSymbolsFor( argv[1], startAdrs, endAdrs )!=-1)
+                trace_printf( "(found & loaded a symbol file))\n" );
+            return 0;
+        }
+        return -1;
     }
     if (!strcmp(argv[1],"rom32k"))
     {
@@ -273,15 +269,36 @@ int executeCpu( int argc, const char **argv )
         setProgramCounter( adrs );
         return 0;
     }
+
+	if (!strcmp(argv[1],"speed"))
+	{
+        extern int fastCpu;
+        extern int fastDsp;
+
+		if (!strcmp(argv[2],"fast"))
+		{
+			fastCpu = 1;
+			return 0;
+		}
+		if (!strcmp(argv[2],"default"))
+		{
+			fastCpu = 0;
+			return 0;
+		}
+	}
+
     if (!strcmp(argv[1],"trace"))
     {
+        trace_printf( "Trace command\n" );
         if (!strcmp(argv[2],"on"))
         {
+            trace_printf( "Trace on\n" );
             traceCPU = 1;
             return 0;
         }
         if (!strcmp(argv[2],"off"))
         {
+            trace_printf( "Trace off\n" );
             traceCPU = 0;
             return 0;
         }
@@ -335,6 +352,10 @@ int executeBload( int argc, const char **argv )
     fseek( f, 0, SEEK_SET );
     fread( getMemoryPtr(start), 1, length, f );
     fclose( f );
+
+    if (tryLoadSymbolsFor( argv[1], start, start+length )!=-1)
+        trace_printf( "(found & loaded a symbol file))\n" );
+
     return 0;
 }
 
@@ -360,20 +381,130 @@ const char *getBoundCommand( int key )
     return keyTable[key];
 }
 
+int uint16FromString( const char *s, uint16_t *num )
+{
+    int len;
+
+    if (sscanf(s, "%hx%n", num, &len) == 1)
+    {
+        if (len == strlen(s))
+            return 0;
+    }
+
+    return -1;
+}
+
+int addressFromString( const char *s, uint16_t *adrs )
+{
+    int len;
+
+    if (sscanf(s, "%hx%n", adrs, &len) == 1)
+    {
+        if (len == strlen(s))
+            return 0;
+    }
+
+    if (lookupSymbol( s, adrs )==0)
+        return 0;
+
+    trace_printf( "Invalid address: %s -- not a symbol either\n", s );
+
+    return -1;
+}
+
+// disa adrs len : disassemble
+int executeDisas( int argc, const char **argv )
+{
+    trace_printf( "Disassembling [%s] [%s]\n", argv[1], argv[2] );
+    uint16_t adrs1;
+    if (addressFromString( argv[1], &adrs1 )==-1)
+        return -1;
+
+    uint16_t adrs2 = adrs1+32;
+    uint16_t len;
+
+    int counter;
+
+    if (argv[2])
+    {
+        if (argv[2][0] == '+')
+        {
+            if (uint16FromString( argv[2]+1, &len )==-1)
+                return -1;
+            adrs2 = adrs1 + len;
+        }
+        else
+        {
+            if (addressFromString( argv[2], &adrs2 )==-1)
+                return -1;
+        }
+    }
+
+    if (adrs2 < adrs1)
+    {
+        trace_printf( "Invalid range: %04X to %04X\n", adrs1, adrs2 );
+        return -1;
+    }
+
+    len = adrs2 - adrs1;
+    counter = len; // signed version
+
+    trace_printf( "Disassembling %d bytes from %04X to %04X\n", len, adrs1, adrs2 );
+
+    while (counter>0)
+    {
+        int instr_len;
+        const char *dis = disassemble( adrs1, getMemoryPtr(adrs1), &instr_len );
+        trace_printf( "%s\n", dis );
+        counter -= instr_len;
+        adrs1 += instr_len;
+    }
+
+    return 0;
+}
+
+//  sym dump name
+int executeSym( int argc, const char **argv )
+{
+    if (!strcmp(argv[1],"list"))
+    {
+        listSymbolTables();
+        return 0;
+    }
+    if (!strcmp(argv[1],"dump"))
+    {
+        dumpSymbols( argv[2] );
+        return 0;
+    }
+    if (!strcmp(argv[1],"load"))
+    {
+        int startAdrs;
+        int endAdrs;
+        sscanf(argv[3],"%x",&startAdrs);
+        sscanf(argv[4],"%x",&endAdrs);
+
+        loadSymbols( argv[2], startAdrs, endAdrs );
+        return 0;
+    }
+    return -1;
+}
+
 int executeHelp( int argc, const char **argv );
 
 command_t commands[] = {
 	{ "help", executeHelp, "displays list of commands" },
-	{ "mode", executeMode, "mode [cpu|display] [default|fast]" },
+	{ "display", executeDisplay, "display speed [default|fast]" },
 	{ "memory", executeMemory, "memory reset (all memory is unallocated)\nmemory ram start end (allocate RAM)\nmemory rom <file> address (loads rom in memory)\nmemory rom32k <file> <jumpers> (load a 32KRAM/ROM image)" },
 	{ "type", executeType, "type [-sync] (@<filename>|string) - type the contents of a string or file" },
 	{ "exec", executeExec, "exec <file> - execute a command file" },
-    { "cpu", executeCpu, "cpu [start|stop|reset|trace on|trace off] - start, stop, reset or trace the CPU" },
+    { "cpu", executeCpu, "cpu [start|stop|reset|speed fast|speed default|trace on|trace off] - start, stop, reset, speedup or trace the CPU" },
     { "sleep", executeSleep, "sleep <ms> - sleep for a number of milliseconds" },
-    { "bsave", executeBsave, "bsave <file> <start> <length> - save memory to a binary file (numbers in hex)" },
-    { "bload", executeBload, "bload <file> <start> - load memory from a binary file (numbers in hex)" },
+    { "bsave", executeBsave, "bsave <file> <start> <length> - save memory to a binary file (numbers in hex)" }, // Should be part of memort
+    { "bload", executeBload, "bload <file> <start> - load memory from a binary file (numbers in hex)" }, // Should be part of memory
     { "bind", executeBind, "bind <key> <command> - bind a key to a command" },
-    { "rom512", executeRom512, "rom512 load <file> - load a 512K ROM image" },
+    { "rom512", executeRom512, "rom512 load <file> - load a 512K ROM image" },  // rom32 should be separate too
+    { "disassemble", executeDisas, "disas <address> <length> - disassemble memory" }, // Should be part of memory
+    { "symbol", executeSym, "sym load <file>|list|dump <name> - dump symbols" },
 	{ "quit", executeQuit, "exit the emulator" },
 };
 
@@ -394,20 +525,42 @@ int executeCommand( int argc, const char **argv )
         trace_printf( "  %d: '%s'\n", j, argv[j] );
 
 	// Look at each command in the table
-	// execute the first matching command
-	for (int i = 0; i < sizeof(commands)/sizeof(commands[0]); i++)
-	{
-		if (strcmp( argv[0], commands[i].name ) == 0)
-		{
-            trace_printf( "Executing command: '%s'\n", argv[0] );
-			int result = commands[i].function( argc, argv );
-            if (result)
-                trace_printf( "Command failed: '%s'\n", argv[0] );
-            return result;
-		}
-	}
-	trace_printf( "Unknown command: '%s'\n", argv[0] );
-	return -1;
+    // If only one matches the prefix, execute it
+    // If more than one matches, print an error message
+    // If none matches, print an error message
+    int match = -1;
+    for (int i = 0; i < sizeof(commands)/sizeof(commands[0]); i++)
+    {
+        if (strncmp( argv[0], commands[i].name, strlen(argv[0]) ) == 0)
+        {
+            if (match != -1)
+            {
+                trace_printf( "Ambiguous command: '%s'\n    ", argv[0] );
+                // print the possibilities
+                for (int j = 0; j < sizeof(commands)/sizeof(commands[0]); j++)
+                {
+                    if (strncmp( argv[0], commands[j].name, strlen(argv[0]) ) == 0)
+                        trace_printf( "%s ", commands[j].name );
+                }
+                trace_printf( "\n" );
+                return -1;
+            }
+            match = i;
+        }
+    }
+    if (match == -1)
+    {
+        trace_printf( "Unknown command: '%s'\n", argv[0] );
+        return -1;
+    }  
+    trace_printf( "Executing command: '%s' (%s)\n", argv[0], commands[match].name );
+    int result = commands[match].function( argc, argv );
+    if (result)
+    {
+        trace_printf( "Command failed: '%s'\n", argv[0] );
+        return -1;
+    }
+	return 0;
 }
 
 int executeCommandString( const char *command )
@@ -514,7 +667,7 @@ int executeCommandString( const char *command )
 	free( cmd );
 
 	if (result)
-		trace_printf( "Command failed: '%s'\n", command );
+		trace_printf( "Command failed: '%s' => %d\n", command, result );
 
 	return result;
 }

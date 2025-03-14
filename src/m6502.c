@@ -32,6 +32,7 @@
 #include "pia6820.h"
 #include "memory.h"
 #include "disassemble.h"
+#include "rom512.h"
 
 #define N 0x80
 #define V 0x40
@@ -863,8 +864,18 @@ static void executeOpcode(void)
 		buf[0] = memPeek(programCounter);
 		buf[1] = memPeek(programCounter+1);
 		buf[2] = memPeek(programCounter+2);
-		trace_printf( "%02X %d:", readKbdCr(), cycles );
-		trace_printf( "%s\n", disassemble(programCounter,buf) );
+
+		trace_printf( "A=%02X X=%02X Y=%02X P=%02X S=%c%c%c%c%c%c%c%c %s\n", accumulator, xRegister, yRegister,
+			stackPointer,
+			statusRegister & N ? 'N' : 'n',
+			statusRegister & V ? 'V' : 'v',
+			'1',
+			statusRegister & B ? 'B' : 'b',
+			statusRegister & D ? 'D' : 'd',
+			statusRegister & I ? 'I' : 'i',
+			statusRegister & Z ? 'Z' : 'z',
+			statusRegister & C ? 'C' : 'c',
+			disassemble(programCounter, buf, NULL ) );
 	}
 
 		//	We emulate video by reading a character and clearing the DSP at every "cursor"
@@ -1868,6 +1879,8 @@ void resetM6502(void)
 
 	trace_tid();
 	trace_printf( "reset: %04x\n", programCounter);
+
+	copyBank512( 0, getMemoryPtr(0) );
 
 	stopped = 0;
 }

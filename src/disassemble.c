@@ -6,6 +6,7 @@
 #include <ctype.h>
 
 #include "memory.h"
+#include "symbols.h"
 
 static const char *opcodes[256] =
 {
@@ -68,12 +69,45 @@ static int byteCount[N_A+1] = {
     1  // N_A (not applicable)
 };
 
+const char *stringFromZP( uint8_t adrs, uint16_t pc )
+{
+    const char *sym = symbol( adrs, pc );
+    if (sym)
+        return sym;
+
+    static char buffer[256];
+    sprintf( buffer, "$%02X", adrs );
+    return buffer;
+}
+
+const char *stringFromAdrs( u_int16_t adrs, uint16_t pc )
+{
+    const char *sym = symbol( adrs, pc );
+    if (sym)
+        return sym;
+
+    static char buffer[256];
+    sprintf( buffer, "$%04X", adrs );
+    return buffer;
+}
+
+const char *stringFrom2Bytes( uint8_t mem0, uint8_t mem1, uint16_t pc )
+{
+    uint16_t adrs = (mem1<<8) | mem0;
+    return stringFromAdrs( adrs, pc );
+}
+
 const char *disassemble( uint16_t pc, const uint8_t *mem, int *len )
 {
     static char buffer[256];
     char mem_buffer[256];
     char operands[256];
     uint8_t opcode = mem[0];
+
+    buffer[0] = 0;
+    const char *symbolicPC = symbol( pc, pc );
+    if (symbolicPC)
+        sprintf( buffer, "%s:\n", symbolicPC );
 
     switch (byteCount[addressing[opcode]])
     {
@@ -99,34 +133,34 @@ const char *disassemble( uint16_t pc, const uint8_t *mem, int *len )
             sprintf( operands, "#$%02X", mem[1] );
             break;
         case ZP0:
-            sprintf( operands, "$%02X", mem[1] );
+            sprintf( operands, "%s", stringFromZP( mem[1], pc ) );
             break;
         case ZPX:
-            sprintf( operands, "$%02X,X", mem[1] );
+            sprintf( operands, "%s,X", stringFromZP( mem[1], pc ) );
             break;
         case ZPY:
-            sprintf( operands, "$%02X,Y", mem[1] );
+            sprintf( operands, "%s,Y", stringFromZP( mem[1], pc ) );
             break;
         case REL:
-            sprintf( operands, "$%04X", pc+(signed char)mem[1]+2 );
+            sprintf( operands, "%s", stringFromAdrs( pc+(signed char)mem[1]+2, pc ) );
             break;
         case ABS:
-            sprintf( operands, "$%02X%02X", mem[2], mem[1] );
+            sprintf( operands, "%s", stringFrom2Bytes( mem[1], mem[2], pc ) );
             break;
         case ABX:
-            sprintf( operands, "$%02X%02X,X", mem[2], mem[1] );
+            sprintf( operands, "%s,X", stringFrom2Bytes( mem[1], mem[2], pc ) );
             break;
         case ABY:
-            sprintf( operands, "$%02X%02X,Y", mem[2], mem[1] );
+            sprintf( operands, "%s,Y", stringFrom2Bytes( mem[1], mem[2], pc ) );
             break;
         case IND:
-            sprintf( operands, "($%02X%02X)", mem[2], mem[1] );
+            sprintf( operands, "(%s)", stringFrom2Bytes( mem[1], mem[2], pc ) );
             break;
         case IZX:
-            sprintf( operands, "($%02X,X)", mem[1] );
+            sprintf( operands, "(%s,X)", stringFromZP( mem[1], pc ) );
             break;
         case IZY:
-            sprintf( operands, "($%02X),Y", mem[1] );
+            sprintf( operands, "(%s),Y", stringFromZP( mem[1], pc ) );
             break;
         case N_A:
             sprintf( operands, "????" );
@@ -136,7 +170,7 @@ const char *disassemble( uint16_t pc, const uint8_t *mem, int *len )
             exit(-1);
     }
 
-    sprintf( buffer, "%04X: %s   %s %s", (int)pc, mem_buffer, opcodes[opcode], operands );
+    sprintf( buffer, "%s%04X: %s   %s %s", buffer, (int)pc, mem_buffer, opcodes[opcode], operands );
 
     if (len)
         *len = byteCount[addressing[opcode]];
