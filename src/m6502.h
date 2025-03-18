@@ -1,6 +1,6 @@
 #include <stdint.h>
 
-/* napple1 ncurses Apple 1 emulator
+/* napple1 Apple 1 emulator
  * Copyright (C) 2008 Nobu Hatano
  *
  * Pom1 Apple 1 Emulator
