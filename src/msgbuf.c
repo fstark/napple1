@@ -23,14 +23,12 @@
 /*
  * Message buffer is a 1 line display of napple 1 system. 
  */
-#include <ncurses.h>
 #include <string.h>
+#include <stdio.h>
 
 #include "screen.h"
 #include "msgbuf.h"
 #include "memory.h"
-
-static WINDOW *msgbuf;
 
 void print_msgbuf(char *s)
 {
@@ -42,30 +40,16 @@ void print_msgbuf(char *s)
 		sprintf(msg, 
 			"%-40s", 
 			s);
-	werase(msgbuf);
-	wprintw(msgbuf, "%s", msg);
-	wrefresh(msgbuf);
+	printf( "INFO: %s", msg);
 }
 
 void init_msgbuf(void)
 {
-	msgbuf = newwin(1, ncol, nrow, 0); 
-	wattron(msgbuf, COLOR_PAIR(1) | A_REVERSE); /* 2 is black on green */
-
-	print_msgbuf("");
 }
 
 void gets_msgbuf(char *prompt, char *typed)
 {
-	werase(msgbuf);
-	echo();
-	nocbreak();
-	wprintw(msgbuf, "%s", prompt);
-	wrefresh(msgbuf);
-	wgetnstr(msgbuf, typed, MSG_LEN_MAX);
-	noecho();
-	cbreak();
-	print_msgbuf("");
-	select_screen();
+	print_msgbuf( prompt );
+	scanf("%256s", typed );
 }
 	

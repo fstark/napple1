@@ -26,86 +26,50 @@
 #define _XOPEN_SOURCE 500
 #include <unistd.h>
 #include <string.h>
-#include <ncurses.h>
 #include <sys/time.h>
 
 #include "screen.h"
 #include "memory.h"
+#include <stdio.h>
 
-static unsigned char screenTbl[40 * 24];
-static int indexX, indexY;
-static WINDOW *screen;
-
-int nrow, ncol;
+#include <termios.h>
 
 char getch_screen(void)
 {
-	return (char)wgetch(screen);
+	//	#### Need to hack for canonical mode, etc
+	int c = getchar();
+
+	// printf( "[%02x]", c );
+	// fflush( stdout );
+	
+	if (c==0x0a)
+		c = 0x0d;
+	return (char)c;
 }
+
+int x = 0;
 
 void init_screen(void)
 {
-	/* Determine main screen window size.
-	 * To reserve bottom 1 line for the message buffer, 
-	 * -1 from $LINES 
-	 */
-	if ((nrow = (LINES - 1)) > 24 || nrow < 1)
-		nrow = 24;
-	if ((ncol = COLS) > 40 || ncol < 1)
-		ncol = 40;
-	
-	/* Create 'screen' window */
-	screen = newwin(nrow, ncol, 0, 0); 
+	x = 0;
+	printf( "\n" );
 
-	/* Set screen window color as Green On Black */
-	if (has_colors())
-	{
-		start_color();
-		init_pair(1, COLOR_WHITE, COLOR_BLACK);
-		wattron(screen, COLOR_PAIR(1));
-	}
-}	
+	struct termios oldt, newt;
 
-void updateScreen(void)
-{
-	int i, j;
-	unsigned char c;
+	tcgetattr(STDIN_FILENO, &oldt);
+	newt = oldt;
+	newt.c_lflag &= ~(ICANON | ECHO);
+	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
-	werase(screen);
-
-	for (j = 0; j < nrow; ++j)
-	{
-		for (i = 0; i < ncol; ++i)
-		{
-		  	wmove(screen, j, i);
-			c = screenTbl[j * ncol + i];
-			if (c < '!') 
-				c = ' ';
-			wprintw(screen, "%c", c);
-		}
-	}
-
-	wmove(screen, indexY, indexX); /* put cursor */
-	wrefresh(screen);
+	// atexit((void (*)(void)) {
+	// 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+	// });
 }
 
 void resetScreen(void)
 {
-	indexX = indexY = 0;
-	memset(screenTbl, 0, nrow * ncol);
-	updateScreen();
-}
-
-static void newLine(void)
-{
-	int i;
-
-	for (i = 0; i < (nrow-1) ; ++i)
-		memcpy(&screenTbl[i * ncol], 
-		       &screenTbl[(i + 1) * ncol], 
-		       ncol);
-
-	memset(&screenTbl[ncol * (nrow-1)], 0, ncol);
+	for (int i=0;i!=24;i++)
+		printf( "\n" );
 }
 
 void outputDsp(unsigned char dsp)
@@ -114,36 +78,27 @@ void outputDsp(unsigned char dsp)
 
 	switch (dsp)
 	{
-	case 0x0A:
-	case 0x0D:
-		indexX = 0;
-		indexY++;
-		break;
-	case 0x00:
-	case 0x7F:
-		break;
-	default:
-		screenTbl[indexY * ncol + indexX] = dsp;
-		indexX++;
-		break;
+		case 0x0A:
+		case 0x0D:
+			printf( "\n" );
+			x = 0;
+			break;
+		case 0x00:
+			break;
+		case 0x7F:
+			printf( "_" );
+			x++;
+			fflush( stdout );
+			break;
+		default:
+			printf( "%c", dsp );
+			x++;
+			fflush( stdout );
+			break;
 	}
-
-	if (indexX == ncol)
+	if (x==40)
 	{
-		indexX = 0;
-		indexY++;
+		printf( "\n" );
+		x = 0;
 	}
-	if (indexY == nrow)
-	{
-		newLine();
-		indexY--;
-	}
-
-	updateScreen();
-}
-
-void select_screen(void)
-{
-	touchwin(screen);
-	wrefresh(screen);
 }

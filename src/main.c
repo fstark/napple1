@@ -19,7 +19,6 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-#include <ncurses.h>
 #include <stdlib.h>
 
 #include "m6502.h"
@@ -29,14 +28,13 @@
 #include "msgbuf.h"
 #include "commands.h"
 #include <string.h>
+#include <stdio.h>
 
 int main( int argc, const char **argv )
 {
 	/* initialize ncurse */
-	initscr(); 
-	noecho();
-	cbreak();
-	attron(A_REVERSE);
+	// noecho();
+	// cbreak();
 	init_screen();
 	init_msgbuf();
 
@@ -68,6 +66,5 @@ int main( int argc, const char **argv )
 	while (handleInput());
 
 	/* ending */
-	endwin(); 
 	return 0;
 }

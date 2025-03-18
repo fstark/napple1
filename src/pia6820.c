@@ -85,5 +85,6 @@ unsigned char readKbdCr(void)
 
 unsigned char readKbd(void)
 {
+	trace_printf( "Reading KBD [%02x]", _kbd );
 	return _kbd;
 }

@@ -118,22 +118,25 @@ int handleInput(void)
 
 	tmp = '\0';
 	while ( (tmp = getch_screen()) == '\0' )
-		;
+	{
+		printf( "." );
+		fflush( stdout );
+	}
+
+/*
+	Usure how to handle this
+	Bound keys being just "shitf" doesn't look like such a great idea...
 
 	if (isBound(tmp))
 	{
+		trace_printf( "Bound key [%c]", tmp );
 		const char *command = getBoundCommand(tmp);
 		if (command)
 			executeCommandString(command);
 		return 1;
 	}
-
-/*
-	if (tmp == 'Q')
-	{	// Quit
-		return 0;
-	}
 */
+
 	if (tmp==0x1b)
 	{	// Command mode
 		char command[256];
@@ -141,22 +144,7 @@ int handleInput(void)
 		executeCommandString(command);
 		return 1;
 	}
-/*
-	if (tmp == 'R')
-	{
-		// Reset
-		resetPia6820();
-		resetM6502();
-		return 1;
-	}
-	if (tmp == 'T')
-	{
-		// Trace
-		extern int traceCPU;
-		traceCPU = !traceCPU;
-		return 1;
-	}
-*/
+
 	if (tmp == '\n') {
 		tmp = '\r';
 	} else if (tmp == '\b') {

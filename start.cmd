@@ -12,4 +12,3 @@ bload m.o65 0280
 
 ; Starts mandelbrot checksum
 type "283R\n"
-
