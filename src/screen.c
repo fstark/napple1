@@ -34,33 +34,29 @@
 
 #include <termios.h>
 
-char getch_screen(void)
-{
-	//	#### Need to hack for canonical mode, etc
-	int c = getchar();
-
-	// printf( "[%02x]", c );
-	// fflush( stdout );
-	
-	if (c==0x0a)
-		c = 0x0d;
-	return (char)c;
-}
-
 int x = 0;
+
+struct termios oldt, newt;
+
+void raw_mode( int raw )
+{
+	if (raw)
+		tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+	else
+		tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+}
 
 void init_screen(void)
 {
 	x = 0;
 	printf( "\n" );
 
-	struct termios oldt, newt;
-
 	tcgetattr(STDIN_FILENO, &oldt);
 	newt = oldt;
 	newt.c_lflag &= ~(ICANON | ECHO);
-	tcsetattr(STDIN_FILENO, TCSANOW, &newt);
 
+	raw_mode( 1 );
+	
 	// atexit((void (*)(void)) {
 	// 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
 	// });
@@ -101,4 +97,20 @@ void outputDsp(unsigned char dsp)
 		printf( "\n" );
 		x = 0;
 	}
+}
+
+char getch_screen(void)
+{
+	raw_mode( 1 );
+	//	#### Need to hack for canonical mode, etc
+	int c = getchar();
+
+	raw_mode( 0 );
+
+	// printf( "[%02x]", c );
+	// fflush( stdout );
+	
+	if (c==0x0a)
+		c = 0x0d;
+	return (char)c;
 }

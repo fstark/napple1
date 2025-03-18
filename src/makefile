@@ -7,16 +7,11 @@ THREAD = -lpthread
 
 # Support Linux and Cygwin
 OS = ${shell uname -o}
-ifeq ($(OS), Cygwin)
-	CURSES = -lncurses -I/usr/include/ncurses
-else
-	CURSES = -lncurses 
-endif
 
 all: ../napple1
 
 ../napple1: m6502.o memory.o pia6820.o screen.o keyboard.o main.o msgbuf.o disassemble.o commands.o rom512.o symbols.o
-	$(CC) $(CFLAGS) -o ../napple1 m6502.o memory.o pia6820.o screen.o msgbuf.o keyboard.o main.o disassemble.o commands.o rom512.o symbols.o $(THREAD) $(CURSES)
+	$(CC) $(CFLAGS) -o ../napple1 m6502.o memory.o pia6820.o screen.o msgbuf.o keyboard.o main.o disassemble.o commands.o rom512.o symbols.o $(THREAD)
 m6502.o: m6502.c m6502.h pia6820.h memory.h disassemble.h
 	$(CC) $(CFLAGS) -o m6502.o -c m6502.c
 memory.o: memory.c pia6820.h memory.h pia6820.h screen.h 

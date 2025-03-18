@@ -21,6 +21,7 @@ Originally, napple1 is a fork of pom1, to curses.
 ## Features removed from upstream
 
 * Autotyping is replaced by a the ``type`` command
+* Curses has been removed so we can use this in more automated settings
 
 ## Forthcoming
 
@@ -31,7 +32,6 @@ Originally, napple1 is a fork of pom1, to curses.
 
 ## Maybe?
 
-* Curses removal ?
 * Extend core format for additional configurations (usure if useful)
 * Automated tokenized basic programs? via some binding?
 

@@ -284,9 +284,9 @@ const char *symbol( uint16_t adrs, uint16_t pc )
 
 void listSymbolTables()
 {
-    trace_printf( "Loaded symbol tables:\n" );
+    printf( "Loaded symbol tables:\n" );
     for (symbolTable_t *sym=s_symbols; sym; sym=sym->next)
-        trace_printf( "%04x-%04X : %s\n", sym->startAdrs, sym->endAdrs, sym->name );
+    printf( "%04x-%04X : %s\n", sym->startAdrs, sym->endAdrs, sym->name );
 }
 
 int dumpSymbols( const char *tableName )

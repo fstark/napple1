@@ -32,9 +32,6 @@
 
 int main( int argc, const char **argv )
 {
-	/* initialize ncurse */
-	// noecho();
-	// cbreak();
 	init_screen();
 	init_msgbuf();
 

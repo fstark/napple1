@@ -415,7 +415,7 @@ int addressFromString( const char *s, uint16_t *adrs )
 // disa adrs len : disassemble
 int executeDisas( int argc, const char **argv )
 {
-    trace_printf( "Disassembling [%s] [%s]\n", argv[1], argv[2] );
+    printf( "Disassembling [%s] [%s]\n", argv[1], argv[2] );
     uint16_t adrs1;
     if (addressFromString( argv[1], &adrs1 )==-1)
         return -1;
@@ -442,20 +442,20 @@ int executeDisas( int argc, const char **argv )
 
     if (adrs2 < adrs1)
     {
-        trace_printf( "Invalid range: %04X to %04X\n", adrs1, adrs2 );
+        printf( "Invalid range: %04X to %04X\n", adrs1, adrs2 );
         return -1;
     }
 
     len = adrs2 - adrs1;
     counter = len; // signed version
 
-    trace_printf( "Disassembling %d bytes from %04X to %04X\n", len, adrs1, adrs2 );
+    printf( "Disassembling %d bytes from %04X to %04X\n", len, adrs1, adrs2 );
 
     while (counter>0)
     {
         int instr_len;
         const char *dis = disassemble( adrs1, getMemoryPtr(adrs1), &instr_len );
-        trace_printf( "%s\n", dis );
+        printf( "%s\n", dis );
         counter -= instr_len;
         adrs1 += instr_len;
     }
@@ -510,12 +510,12 @@ command_t commands[] = {
 
 int executeHelp( int argc, const char **argv )
 {
-	trace_printf( "List of emulator commands:\n" );
+	printf( "List of emulator commands:\n" );
 	for (int i = 0; i < sizeof(commands)/sizeof(commands[0]); i++)
 	{
-		trace_printf( "  %s: %s\n", commands[i].name, commands[i].help );
+		printf( "  %s: %s\n", commands[i].name, commands[i].help );
 	}
-	trace_printf( "\n" );
+	printf( "\n" );
 	return 0;
 }
 
