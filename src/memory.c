@@ -194,10 +194,12 @@ int loadRom( unsigned char startPage, const char *romfile, uint16_t *startAdrs, 
 
 	fclose(fd);
 
+		//	Not sure this makes any sense
 	if (startAdrs)
 		*startAdrs = start;
 
 	if (endAdrs)
+		*endAdrs = start+len;
 
 	return 0;
 }
