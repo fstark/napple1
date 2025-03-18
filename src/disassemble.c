@@ -166,7 +166,7 @@ const char *disassemble( uint16_t pc, const uint8_t *mem, int *len )
             sprintf( operands, "????" );
             break;
         default:
-        	trace_printf( "CPU: %d\n", addressing[opcode] );
+        	console_printf( "CPU: %d\n", addressing[opcode] );
             exit(-1);
     }
 

@@ -70,7 +70,7 @@ void resetScreen(void)
 
 void outputDsp(unsigned char dsp)
 {
-	// trace_printf("DISPLAY: %02X '%c'\n", dsp, dsp);
+	// console_printf("DISPLAY: %02X '%c'\n", dsp, dsp);
 
 	switch (dsp)
 	{

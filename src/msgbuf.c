@@ -49,7 +49,9 @@ void init_msgbuf(void)
 
 void gets_msgbuf(char *prompt, char *typed)
 {
+	ansi_red();
 	printf( "%s", prompt );
 	scanf("%256[^\n]", typed );
+	ansi_black();
 }
 

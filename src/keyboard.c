@@ -129,7 +129,7 @@ int handleInput(void)
 
 	if (isBound(tmp))
 	{
-		trace_printf( "Bound key [%c]", tmp );
+		console_printf( "Bound key [%c]", tmp );
 		const char *command = getBoundCommand(tmp);
 		if (command)
 			executeCommandString(command);

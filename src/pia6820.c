@@ -38,7 +38,7 @@ void writeDspCr(unsigned char dspCr)
 
 void writeDsp(unsigned char dsp)
 {
-//	trace_printf( "writeDsp: %02X\n", dsp );
+//	console_printf( "writeDsp: %02X\n", dsp );
 	_dsp = dsp | 0x80;			//	Will be printed by updateDisplay
 }
 
@@ -46,7 +46,7 @@ void updateDisplay()
 {
 	if (_dsp&0x80)
 	{
-		// trace_printf( "updateDisplay: %02X\n", _dsp );
+		// console_printf( "updateDisplay: %02X\n", _dsp );
 		//	#### There are other things to check for to be sure we only display apple1 characters
 		int c = _dsp&0x7f;
 		if (c>='a' && c<='z')

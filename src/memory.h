@@ -58,4 +58,10 @@ void setRomFiles(void);
 
 // move me
 int trace_printf( const char *format, ... );
+int console_printf( const char *format, ... );
 void trace_tid();
+
+void ansi_red();
+void ansi_green();
+void ansi_black();
+

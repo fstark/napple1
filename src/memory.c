@@ -155,7 +155,7 @@ int loadRom( unsigned char startPage, const char *romfile, uint16_t *startAdrs, 
 	int i;
 
 	if (!fd) {
-		trace_printf( "Failed to open %s\n", romfile);
+		console_printf( "Failed to open %s\n", romfile);
 		perror("fopen");
 		return -1;
 	}
@@ -206,6 +206,10 @@ int loadRom( unsigned char startPage, const char *romfile, uint16_t *startAdrs, 
 
 static FILE *trace_file;
 
+void ansi_red() { printf( "\033[31m" ); }
+void ansi_green() { printf( "\033[32m" ); }
+void ansi_black() { printf( "\033[0m" ); }
+
 // a variant of fprintf that prints in the file "trace_file"
 int trace_printf( const char *format, ... )
 {
@@ -227,6 +231,22 @@ int trace_printf( const char *format, ... )
 	return res;
 }
 
+int console_printf( const char *format, ... )
+{
+	va_list args;
+	int res;
+
+	ansi_green();
+
+	va_start( args, format );
+	res = vfprintf( stdout, format, args );
+	va_end( args );
+
+	ansi_black();
+
+	return res;
+}
+
 #include <pthread.h>
 
 // print thread id
@@ -240,7 +260,7 @@ void dumpMem( void )
 	//	 Loop over all memory pages and print the type
 	for (int i=0;i!=256;i++)
 	{
-		trace_printf( "%02x: %s ", i, s_memType[i]==MEM_RAM ? "RAM" : s_memType[i]==MEM_ROM ? "ROM" : "UNALLOCATED" );
+		console_printf( "%02x: %s ", i, s_memType[i]==MEM_RAM ? "RAM" : s_memType[i]==MEM_ROM ? "ROM" : "UNALLOCATED" );
 
 		// print content of page in hex, address followed by 16 bytes per line
 		if (s_memType[i]==MEM_RAM || s_memType[i]==MEM_ROM)
@@ -258,25 +278,25 @@ void dumpMem( void )
 
 			if (same)
 			{
-				trace_printf( "%02x * 256\n", mem[i*256] );
+				console_printf( "%02x * 256\n", mem[i*256] );
 			}
 			else
 			{
-				trace_printf( "\n" );
+				console_printf( "\n" );
 				for (int j=0;j!=256;j+=16)
 				{
-					trace_printf( "%04x: ", i*256+j );
+					console_printf( "%04x: ", i*256+j );
 					for (int k=0;k!=16;k++)
 					{
-						trace_printf( "%02x ", mem[i*256+j+k] );
+						console_printf( "%02x ", mem[i*256+j+k] );
 					}
-					trace_printf( "\n" );
+					console_printf( "\n" );
 				}
 			}
 		}
 		else
 		{
-			trace_printf( "\n" );
+			console_printf( "\n" );
 		}
 	}
 }
@@ -332,16 +352,16 @@ unsigned char memRead(unsigned short address)
 	if (address == 0xD010)
 	{
 		unsigned char c = readKbd();
-		// trace_printf( "KEYBOARD: READ %02x '%c'\n", c, c&0x7f );
+		// console_printf( "KEYBOARD: READ %02x '%c'\n", c, c&0x7f );
 		writeKbdCr( 0x27 );
 // 		if (!(readKbdCr()&0x80))
-// \			trace_printf( "KEYBOARD: cleared\n" );
+// \			console_printf( "KEYBOARD: cleared\n" );
 		return c;
 	}
 	if (address == 0xD011) {
 		unsigned char v = readKbdCr();
 		// if (v&0x80)
-		// 	trace_printf( "KEYBOARD: key pressed\n" );
+		// 	console_printf( "KEYBOARD: key pressed\n" );
 		if (!(v & 0x80))
 			nextAutotyping();
 		return v;

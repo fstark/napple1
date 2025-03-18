@@ -865,7 +865,7 @@ static void executeOpcode(void)
 		buf[1] = memPeek(programCounter+1);
 		buf[2] = memPeek(programCounter+2);
 
-		trace_printf( "A=%02X X=%02X Y=%02X P=%02X S=%c%c%c%c%c%c%c%c %s\n", accumulator, xRegister, yRegister,
+		console_printf( "A=%02X X=%02X Y=%02X P=%02X S=%c%c%c%c%c%c%c%c %s\n", accumulator, xRegister, yRegister,
 			stackPointer,
 			statusRegister & N ? 'N' : 'n',
 			statusRegister & V ? 'V' : 'v',
@@ -880,7 +880,7 @@ static void executeOpcode(void)
 
 		//	We emulate video by reading a character and clearing the DSP at every "cursor"
 		//	We only support a single cursor, as there is no way to do multiple cursors on an Apple1
-	// trace_printf( "Cycles %d nextCursor %d\n", cycles, nextCursor );
+	// console_printf( "Cycles %d nextCursor %d\n", cycles, nextCursor );
 	if (cycles>nextCursor)
 	{
 		updateDisplay();
@@ -889,7 +889,7 @@ static void executeOpcode(void)
 			nextCursor += 10;
 		else
 			nextCursor += 1000000/60;
-//		trace_printf( "at %ld, next display at %ld in %ld\n", cycles, nextCursor, nextCursor-cycles );
+//		console_printf( "at %ld, next display at %ld in %ld\n", cycles, nextCursor, nextCursor-cycles );
 	}
 
 	unsigned char opcode = memRead(programCounter++);

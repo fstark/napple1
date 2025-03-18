@@ -209,26 +209,26 @@ int tryLoadSymbolsFor( const char *filename, uint16_t start, uint16_t end )
 
     strcat( buffer, ".SYM" );
 
-    trace_printf( "#### tryLoadSymbolsInFIle: %s %04X %04X\n", buffer, start, end );
+    trace_printf( "#### tryLoadSymbolsInFile: %s %04X %04X\n", buffer, start, end );
 
     return loadSymbols( buffer, start, end );
 }
 
 void dumpSymbolTable( symbolTable_t *symbols )
 {
-    trace_printf( "Symbol table [%s]\n", symbols->name );
-    trace_printf( "Global symbols (for any address in $%04X-$%04X)\n", symbols->startAdrs, symbols->endAdrs );
+    console_printf( "Symbol table [%s]\n", symbols->name );
+    console_printf( "Global symbols (for any address in $%04X-$%04X)\n", symbols->startAdrs, symbols->endAdrs );
     for (int i=0; i<65536; i++)
     {
         if (symbols->globals[i])
-            trace_printf( "%04X: %s\n", i, symbols->globals[i] );
+            console_printf( "%04X: %s\n", i, symbols->globals[i] );
     }
 
-    trace_printf( "Local symbols (for any instructions in $%04X-$%04X)\n", symbols->startAdrs, symbols->endAdrs );
+    console_printf( "Local symbols (for any instructions in $%04X-$%04X)\n", symbols->startAdrs, symbols->endAdrs );
     for (int i=0; i<65536; i++)
     {
         if (symbols->locals[i])
-            trace_printf( "%04X: %s\n", i, symbols->locals[i] );
+            console_printf( "%04X: %s\n", i, symbols->locals[i] );
     }
 }
 
@@ -284,9 +284,9 @@ const char *symbol( uint16_t adrs, uint16_t pc )
 
 void listSymbolTables()
 {
-    printf( "Loaded symbol tables:\n" );
+    console_printf( "Loaded symbol tables:\n" );
     for (symbolTable_t *sym=s_symbols; sym; sym=sym->next)
-    printf( "%04x-%04X : %s\n", sym->startAdrs, sym->endAdrs, sym->name );
+    console_printf( "%04x-%04X : %s\n", sym->startAdrs, sym->endAdrs, sym->name );
 }
 
 int dumpSymbols( const char *tableName )
