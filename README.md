@@ -44,7 +44,11 @@ Go in [the rom32 subdirectory](rom32/README.md) for more information on how to e
 ## BUGS
 
 There is a freeze sometimes, unsure what can trigger it
+
 Error tracing is pretty bad
+
 Errors don't go back to the UI (need the trace file)
+
 Commands don't check their arguments
+
 Hexadecimal numbers are case-sensitive

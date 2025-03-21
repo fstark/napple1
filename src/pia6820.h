@@ -20,16 +20,15 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 void resetPia6820(void);
-void setKdbInterrups(int b);
-int getKbdInterrups(void);
+
 int getDspOutput(void);
 void writeDspCr(unsigned char dspCr);
 void writeDsp(unsigned char dsp);
+void updateDisplay();
+void keyPressed(unsigned char key);
 void writeKbdCr(unsigned char kbdCr);
 unsigned char readDspCr(void);
 unsigned char readDsp(void);
 unsigned char readKbdCr(void);
 unsigned char readKbd(void);
-void keyPressed(unsigned char key);
 
-void updateDisplay();

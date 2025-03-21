@@ -22,15 +22,6 @@
 #define FNAME_LEN_MAX   1024
 
 typedef enum {
-	APPLE1_4K,
-	APPLE1_8K,
-	APPLE1_4_4K,
-	APPLE1_32K,
-    CUSTOM,
-	LAST_MODE
-} eMode;
-
-typedef enum {
     MEM_RAM,
     MEM_ROM,
     MEM_UNALOCATED

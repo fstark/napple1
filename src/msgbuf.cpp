@@ -20,15 +20,18 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, 
  * USA.
  */
-/*
- * Message buffer is a 1 line display of napple 1 system. 
- */
+
+ #include "msgbuf.h"
+ 
 #include <string.h>
 #include <stdio.h>
 
 #include "screen.h"
-#include "msgbuf.h"
 #include "memory.h"
+
+void init_msgbuf(void)
+{
+}
 
 void print_msgbuf(char *s)
 {
@@ -41,10 +44,6 @@ void print_msgbuf(char *s)
             "%-40s", 
             s);
     printf( "INFO: %s", msg);
-}
-
-void init_msgbuf(void)
-{
 }
 
 void gets_msgbuf(const char *prompt, char *typed)

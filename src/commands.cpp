@@ -16,20 +16,20 @@
 // The third element is the help string
 // The next element is the number of arguments (minus the command name)
 typedef struct {
-	const char *name;
-	int (*function)(int argc, const char **argv);
-	const char *help;
+    const char *name;
+    int (*function)(int argc, const char **argv);
+    const char *help;
 } command_t;
 
 int executeType( int argc, const char **argv )
 {
-	int sync = 0;
-	argv++;
-	if (!strcmp(*argv,"-sync"))
-	{
-		sync = 1;
-		argv++;
-	}
+    int sync = 0;
+    argv++;
+    if (!strcmp(*argv,"-sync"))
+    {
+        sync = 1;
+        argv++;
+    }
     if (**argv=='@')
     {
         if (!startAutotypingFile( (*argv)+1 ))
@@ -39,19 +39,19 @@ int executeType( int argc, const char **argv )
         if (!startAutotypingBuffer( *argv ))
             return -1;
 
-	if (sync)
+    if (sync)
     {
         console_printf( "Waiting for typing to end\n" );
-		while (isAutotyping())
-			;
+        while (isAutotyping())
+            ;
         console_printf( "Done\n" );
     }
-	return 0;
+    return 0;
 }
 
 int executeQuit( int argc, const char **argv )
 {
-	exit( 0 );
+    exit( 0 );
 }
 
 int executeDisplay( int argc, const char **argv )
@@ -59,36 +59,45 @@ int executeDisplay( int argc, const char **argv )
     extern int fastCpu;
     extern int fastDsp;
 
-	argv++;
-	if (!strcmp(*argv,"speed"))
-	{
+    argv++;
+    if (!strcmp(*argv,"speed"))
+    {
         argv++;
-		if (!strcmp(*argv,"fast"))
-		{
-			fastDsp = 1;
-			return 0;
-		}
-		if (!strcmp(*argv,"default"))
-		{
-			fastDsp = 0;
-			return 0;
-		}
-	}
+        if (!strcmp(*argv,"fast"))
+        {
+            fastDsp = 1;
+            return 0;
+        }
+        if (!strcmp(*argv,"default"))
+        {
+            fastDsp = 0;
+            return 0;
+        }
+    }
 
-	return -1;
+    return -1;
 }
 
+const char *get_arg( const char **argv, size_t index )
+{
+    for (size_t i = 0; i < index; i++)
+    {
+        if (!argv[i])
+            return "???";  //  Not great, empty/useless string for no argument
+    }
+    return argv[index];
+}
 
 int executeExec( int argc, const char **argv )
 {
-	if (argc < 2)
-		return -1;
-	FILE *f = fopen( argv[1], "r" );
-	if (!f)
-		return -1;
-	char command[256];
-	while (fgets( command, 256, f ))
-	{
+    if (argc < 2)
+        return -1;
+    FILE *f = fopen( get_arg(argv, 1 ), "r" );
+    if (!f)
+        return -1;
+    char command[256];
+    while (fgets( command, 256, f ))
+    {
         // Remove trailing newline
         char *nl = strchr( command, '\n' );
         if (nl)
@@ -96,43 +105,43 @@ int executeExec( int argc, const char **argv )
 
         // Execute the command
         trace_printf( "Executing: %s\n", command );
-		if (executeCommandString( command ))
-		{
-			fclose( f );
-			return -1;	// Command failed
-		}
-	}
-	fclose( f );
-	return 0;		// All commands succeeded
+        if (executeCommandString( command ))
+        {
+            fclose( f );
+            return -1;	// Command failed
+        }
+    }
+    fclose( f );
+    return 0;		// All commands succeeded
 }
 
 int executeCommandFile( const char *filename )
 {
-    const char *argv[] = { "exec", filename, NULL };
-    return executeExec( 2, argv );
+    const char *args[] = { "exec", filename, NULL };
+    return executeExec( 2, args );
 }
 
 int executeMemory( int argc, const char **argv )
 {
-    if (!strcmp(argv[1],"reset"))
+    if (!strcmp(get_arg(argv,1),"reset"))
     {
         trace_printf( "Memory reset\n" );
         resetMemType();
         return 0;
     }
-    if (!strcmp(argv[1],"dump"))
+    if (!strcmp(get_arg(argv,1),"dump"))
     {
         dumpMem();
         return 0;
     }
-    if (!strcmp(argv[1],"ram"))
+    if (!strcmp(get_arg(argv,1),"ram"))
     {
         int pageStart;
         int pageEnd;
         // PageStart and PageEnd are 4 char hexadecimal strings in argv[2] and argv[3]
-        if (sscanf(argv[2],"%x",&pageStart) != 1)
+        if (sscanf(get_arg(argv, 2),"%x",&pageStart) != 1)
             return -1;
-        if (sscanf(argv[3],"%x",&pageEnd) != 1)
+        if (sscanf(get_arg(argv, 3),"%x",&pageEnd) != 1)
             return -1;
         pageEnd++;
         pageStart /= 256;
@@ -144,27 +153,27 @@ int executeMemory( int argc, const char **argv )
         return 0;
     }
     //  #### Should be using "bload" (which should be "memory load")
-    if (!strcmp(argv[1],"rom"))
+    if (!strcmp(get_arg(argv,1),"rom"))
     {
-        const char *romfile = argv[2];
+        const char *romfile = get_arg(argv, 2);
         int addr;
-        if (sscanf(argv[3],"%x",&addr) != 1)
+        if (sscanf(get_arg(argv, 3),"%x",&addr) != 1)
             return -1;
         
         uint16_t startAdrs = 0;
         uint16_t endAdrs = 0;
         if (loadRom( addr/256, romfile, &startAdrs, &endAdrs )==0)
         {   
-            if (tryLoadSymbolsFor( argv[1], startAdrs, endAdrs )!=-1)
+            if (tryLoadSymbolsFor( get_arg(argv, 1), startAdrs, endAdrs )!=-1)
                 trace_printf( "(found & loaded a symbol file))\n" );
             return 0;
         }
         return -1;
     }
-    if (!strcmp(argv[1],"rom32k"))
+    if (!strcmp(get_arg(argv,1),"rom32k"))
     {
-        const char *filename = argv[2];
-        const char *mappingString = argv[3];
+        const char *filename = get_arg(argv, 2);
+        const char *mappingString = get_arg(argv, 3);
 
         unsigned short mapping = 0;
         // Loop over the mapping string
@@ -197,9 +206,9 @@ int executeMemory( int argc, const char **argv )
 int executeRom512( int argc, const char **argv )
 {
     // rom512 load <file>
-    if (!strcmp(argv[1],"load"))
+    if (!strcmp(get_arg(argv,1),"load"))
     {
-        const char *filename = argv[2];
+        const char *filename = get_arg(argv, 2);
         if (loadRom512( filename ))
             rom512kpresent = 1;
         else
@@ -212,7 +221,7 @@ int executeRom512( int argc, const char **argv )
     }
 
     // rom512 release
-    if (!strcmp(argv[1],"release"))
+    if (!strcmp(get_arg(argv,1),"release"))
     {
         releaseRom512();
 
@@ -224,9 +233,9 @@ int executeRom512( int argc, const char **argv )
     }
 
     // rom512 bank <n>
-    if (!strcmp(argv[1],"bank"))
+    if (!strcmp(get_arg(argv,1),"bank"))
     {
-        int bank = atoi( argv[2] );
+        int bank = atoi( get_arg(argv, 2) );
         if (bank<0 || bank>15)
             return -1;
 
@@ -248,56 +257,56 @@ int executeTrace( int argc, const char **argv )
 int executeCpu( int argc, const char **argv )
 {
     //  start stop and reset
-    if (!strcmp(argv[1],"start"))
+    if (!strcmp(get_arg(argv,1),"start"))
     {
         startM6502();
         return 0;
     }
-    if (!strcmp(argv[1],"stop"))
+    if (!strcmp(get_arg(argv,1),"stop"))
     {
         stopM6502();
         return 0;
     }
-    if (!strcmp(argv[1],"reset"))
+    if (!strcmp(get_arg(argv,1),"reset"))
     {
         resetM6502();
         return 0;
     }
-    if (!strcmp(argv[1],"jump"))
+    if (!strcmp(get_arg(argv,1),"jump"))
     {
         int adrs;
-        sscanf(argv[2],"%x",&adrs);
+        sscanf(get_arg(argv, 2),"%x",&adrs);
         setProgramCounter( adrs );
         return 0;
     }
 
-	if (!strcmp(argv[1],"speed"))
-	{
+    if (!strcmp(get_arg(argv,1),"speed"))
+    {
         extern int fastCpu;
         extern int fastDsp;
 
-		if (!strcmp(argv[2],"fast"))
-		{
-			fastCpu = 1;
-			return 0;
-		}
-		if (!strcmp(argv[2],"default"))
-		{
-			fastCpu = 0;
-			return 0;
-		}
-	}
+        if (!strcmp(get_arg(argv,2),"fast"))
+        {
+            fastCpu = 1;
+            return 0;
+        }
+        if (!strcmp(get_arg(argv,2),"default"))
+        {
+            fastCpu = 0;
+            return 0;
+        }
+    }
 
-    if (!strcmp(argv[1],"trace"))
+    if (!strcmp(get_arg(argv,1),"trace"))
     {
         console_printf( "Trace command\n" );
-        if (!strcmp(argv[2],"on"))
+        if (!strcmp(get_arg(argv,2),"on"))
         {
             console_printf( "Trace on\n" );
             traceCPU = 1;
             return 0;
         }
-        if (!strcmp(argv[2],"off"))
+        if (!strcmp(get_arg(argv,2),"off"))
         {
             console_printf( "Trace off\n" );
             traceCPU = 0;
@@ -312,7 +321,7 @@ int executeSleep( int argc, const char **argv )
     if (argc < 2)
         return -1;
     int ms;
-    if (sscanf(argv[1],"%d",&ms) != 1)
+    if (sscanf(get_arg(argv, 1),"%d",&ms) != 1)
         return -1;
     usleep( ms * 1000 );
     return 0;
@@ -325,11 +334,11 @@ int executeBsave( int argc, const char **argv )
         return -1;
     int start;
     int length;
-    if (sscanf(argv[2],"%x",&start) != 1)
+    if (sscanf(get_arg(argv, 2),"%x",&start) != 1)
         return -1;
-    if (sscanf(argv[3],"%x",&length) != 1)
+    if (sscanf(get_arg(argv, 3),"%x",&length) != 1)
         return -1;
-    FILE *f = fopen( argv[1], "wb" );
+    FILE *f = fopen( get_arg(argv, 1), "wb" );
     if (!f)
         return -1;
     fwrite( getMemoryPtr(start), 1, length, f );
@@ -343,9 +352,9 @@ int executeBload( int argc, const char **argv )
     if (argc < 3)
         return -1;
     int start;
-    if (sscanf(argv[2],"%x",&start) != 1)
+    if (sscanf(get_arg(argv, 2),"%x",&start) != 1)
         return -1;
-    FILE *f = fopen( argv[1], "rb" );
+    FILE *f = fopen( get_arg(argv, 1), "rb" );
     if (!f)
         return -1;
     fseek( f, 0, SEEK_END );
@@ -354,7 +363,7 @@ int executeBload( int argc, const char **argv )
     fread( getMemoryPtr(start), 1, length, f );
     fclose( f );
 
-    if (tryLoadSymbolsFor( argv[1], start, start+length )!=-1)
+    if (tryLoadSymbolsFor( get_arg(argv, 1), start, start+length )!=-1)
         console_printf( "(found & loaded a symbol file))\n" );
 
     return 0;
@@ -367,8 +376,8 @@ int executeBind( int argc, const char **argv )
 {
     if (argc < 3)
         return -1;
-    int key = argv[1][0];
-    keyTable[key] = strdup( argv[2] );
+    int key = get_arg(argv, 1)[0];
+    keyTable[key] = strdup( get_arg(argv, 2) );
     return 0;
 }
 
@@ -416,9 +425,9 @@ int addressFromString( const char *s, uint16_t *adrs )
 // disa adrs len : disassemble
 int executeDisas( int argc, const char **argv )
 {
-    console_printf( "Disassembling [%s] [%s]\n", argv[1], argv[2] );
+    console_printf( "Disassembling [%s] [%s]\n", get_arg(argv, 1), get_arg(argv, 2) );
     uint16_t adrs1;
-    if (addressFromString( argv[1], &adrs1 )==-1)
+    if (addressFromString( get_arg(argv, 1), &adrs1 )==-1)
         return -1;
 
     uint16_t adrs2 = adrs1+32;
@@ -426,17 +435,17 @@ int executeDisas( int argc, const char **argv )
 
     int counter;
 
-    if (argv[2])
+    if (get_arg(argv, 2))
     {
-        if (argv[2][0] == '+')
+        if (get_arg(argv, 2)[0] == '+')
         {
-            if (uint16FromString( argv[2]+1, &len )==-1)
+            if (uint16FromString( get_arg(argv, 2)+1, &len )==-1)
                 return -1;
             adrs2 = adrs1 + len;
         }
         else
         {
-            if (addressFromString( argv[2], &adrs2 )==-1)
+            if (addressFromString( get_arg(argv, 2), &adrs2 )==-1)
                 return -1;
         }
     }
@@ -467,24 +476,24 @@ int executeDisas( int argc, const char **argv )
 //  sym dump name
 int executeSym( int argc, const char **argv )
 {
-    if (!strcmp(argv[1],"list"))
+    if (!strcmp(get_arg(argv,1),"list"))
     {
         listSymbolTables();
         return 0;
     }
-    if (!strcmp(argv[1],"dump"))
+    if (!strcmp(get_arg(argv,1),"dump"))
     {
-        dumpSymbols( argv[2] );
+        dumpSymbols( get_arg(argv, 2) );
         return 0;
     }
-    if (!strcmp(argv[1],"load"))
+    if (!strcmp(get_arg(argv,1),"load"))
     {
         int startAdrs;
         int endAdrs;
-        sscanf(argv[3],"%x",&startAdrs);
-        sscanf(argv[4],"%x",&endAdrs);
+        sscanf(get_arg(argv, 3),"%x",&startAdrs);
+        sscanf(get_arg(argv, 4),"%x",&endAdrs);
 
-        loadSymbols( argv[2], startAdrs, endAdrs );
+        loadSymbols( get_arg(argv, 2), startAdrs, endAdrs );
         return 0;
     }
     return -1;
@@ -493,11 +502,11 @@ int executeSym( int argc, const char **argv )
 int executeHelp( int argc, const char **argv );
 
 command_t commands[] = {
-	{ "help", executeHelp, "displays list of commands" },
-	{ "display", executeDisplay, "display speed [default|fast]" },
-	{ "memory", executeMemory, "memory reset (all memory is unallocated)\n\tmemory ram start end (allocate RAM)\n\tmemory rom <file> address (loads rom in memory)\n\tmemory rom32k <file> <jumpers> (load a 32KRAM/ROM image)\n\tdump" },
-	{ "type", executeType, "type [-sync] (@<filename>|string) - type the contents of a string or file" },
-	{ "exec", executeExec, "exec <file> - execute a command file" },
+    { "help", executeHelp, "displays list of commands" },
+    { "display", executeDisplay, "display speed [default|fast]" },
+    { "memory", executeMemory, "memory reset (all memory is unallocated)\n\tmemory ram start end (allocate RAM)\n\tmemory rom <file> address (loads rom in memory)\n\tmemory rom32k <file> <jumpers> (load a 32KRAM/ROM image)\n\tdump" },
+    { "type", executeType, "type [-sync] (@<filename>|string) - type the contents of a string or file" },
+    { "exec", executeExec, "exec <file> - execute a command file" },
     { "cpu", executeCpu, "cpu [start|stop|reset|speed fast|speed default|trace on|trace off] - start, stop, reset, speedup or trace the CPU" },
     { "sleep", executeSleep, "sleep <ms> - sleep for a number of milliseconds" },
     { "bsave", executeBsave, "bsave <file> <start> <length> - save memory to a binary file (numbers in hex)" }, // Should be part of memort
@@ -506,18 +515,18 @@ command_t commands[] = {
     { "rom512", executeRom512, "rom512 load <file> - load a 512K ROM image" },  // rom32 should be separate too
     { "disassemble", executeDisas, "disas <address> <length> - disassemble memory" }, // Should be part of memory
     { "symbol", executeSym, "symbol load <file>|list|dump <name> - dump symbols" },
-	{ "quit", executeQuit, "exit the emulator" },
+    { "quit", executeQuit, "exit the emulator" },
 };
 
 int executeHelp( int argc, const char **argv )
 {
-	console_printf( "List of emulator commands:\n" );
-	for (int i = 0; i < sizeof(commands)/sizeof(commands[0]); i++)
-	{
-		console_printf( "  %s: %s\n", commands[i].name, commands[i].help );
-	}
-	console_printf( "\n" );
-	return 0;
+    console_printf( "List of emulator commands:\n" );
+    for (int i = 0; i < sizeof(commands)/sizeof(commands[0]); i++)
+    {
+        console_printf( "  %s: %s\n", commands[i].name, commands[i].help );
+    }
+    console_printf( "\n" );
+    return 0;
 }
 
 int executeCommand( int argc, const char **argv )
@@ -525,22 +534,22 @@ int executeCommand( int argc, const char **argv )
     // for (int j = 0; j < argc; j++)
     //     trace_printf( "  %d: '%s'\n", j, argv[j] );
 
-	// Look at each command in the table
+    // Look at each command in the table
     // If only one matches the prefix, execute it
     // If more than one matches, print an error message
     // If none matches, print an error message
     int match = -1;
     for (int i = 0; i < sizeof(commands)/sizeof(commands[0]); i++)
     {
-        if (strncmp( argv[0], commands[i].name, strlen(argv[0]) ) == 0)
+        if (strncmp( get_arg(argv,0), commands[i].name, strlen(get_arg(argv,0)) ) == 0)
         {
             if (match != -1)
             {
-                console_printf( "Ambiguous command: '%s'\n    ", argv[0] );
+                console_printf( "Ambiguous command: '%s'\n    ", get_arg(argv,0) );
                 // print the possibilities
                 for (int j = 0; j < sizeof(commands)/sizeof(commands[0]); j++)
                 {
-                    if (strncmp( argv[0], commands[j].name, strlen(argv[0]) ) == 0)
+                    if (strncmp( get_arg(argv,0), commands[j].name, strlen(get_arg(argv,0)) ) == 0)
                         console_printf( "%s ", commands[j].name );
                 }
                 console_printf( "\n" );
@@ -551,40 +560,40 @@ int executeCommand( int argc, const char **argv )
     }
     if (match == -1)
     {
-        console_printf( "Unknown command: '%s'\n", argv[0] );
+        console_printf( "Unknown command: '%s'\n", get_arg(argv,0) );
         return -1;
     }  
-    trace_printf( "Executing command: '%s' (%s)\n", argv[0], commands[match].name );
+    trace_printf( "Executing command: '%s' (%s)\n", get_arg(argv,0), commands[match].name );
     int result = commands[match].function( argc, argv );
     if (result)
     {
-        console_printf( "Command failed: '%s'\n", argv[0] );
+        console_printf( "Command failed: '%s'\n", get_arg(argv,0) );
         return -1;
     }
-	return 0;
+    return 0;
 }
 
 int executeCommandString( const char *command )
 {
-	//	Ignore leading whitespace
-	while (*command == ' ' || *command == '\t')
-		command++;
-	
-	// 	';' denotes a comment
-	if (*command == ';')
-		return 0;	//	Successful execution
+    //	Ignore leading whitespace
+    while (*command == ' ' || *command == '\t')
+        command++;
+    
+    // 	';' denotes a comment
+    if (*command == ';')
+        return 0;	//	Successful execution
 
     //  Empty commands are ignored
     if (!*command)
         return 0;    
 
-	//	Copy command into a new buffer
-	char *cmd = strdup( command );
+    //	Copy command into a new buffer
+    char *cmd = strdup( command );
 
-	//	Create an argv-like array of pointers to each word of the copied command.
-	//	The array is terminated by a NULL pointer.
-	//	The maximum number of arguments is 16.
-	const char *argv[16];
+    //	Create an argv-like array of pointers to each word of the copied command.
+    //	The array is terminated by a NULL pointer.
+    //	The maximum number of arguments is 16.
+    const char *argv[16];
     // Clear argv
     for (int i = 0; i < 16; i++)
         argv[i] = NULL;
@@ -659,16 +668,16 @@ int executeCommandString( const char *command )
     //     }
     //     *dst = '\0';
     // }
-	argv[argc] = NULL; // Ensure the array is NULL-terminated
+    argv[argc] = NULL; // Ensure the array is NULL-terminated
 
-	//	Execute the command
-	int result = executeCommand( argc, argv );
+    //	Execute the command
+    int result = executeCommand( argc, argv );
 
-	//	Free the copied command
-	free( cmd );
+    //	Free the copied command
+    free( cmd );
 
-	if (result)
-		console_printf( "Command failed: '%s' => %d\n", command, result );
+    if (result)
+        console_printf( "Command failed: '%s' => %d\n", command, result );
 
-	return result;
+    return result;
 }
