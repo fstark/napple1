@@ -20,14 +20,14 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 /*
- * Memory maap of napple1
+ * Memory map of napple1
  * 
- * Apple I 8K mode & napple1 64K mode, common usage
- * -----------------------------------------------------------------------
- * $0000           Ststem & User Space 
+ * - 4K in low memory ----------------------------------------------------
+ * $0000 - $00FF   RAM (zero page)
+ * $0100 - $01FF   RAM (stack) 
  * $0200 - $027F   Input Buffer used by monitor
- * $0FFF
- * -----------------------------------------------------------------------
+ * $0280 - $0FFF   RAM
+ * - Hardware access -----------------------------------------------------
  * $D010	KBD	Keyboard input register. b7 is always 1 by hardware.
  * 		Read KBD will automatcically clear KBDCR's b7.
  * $D011	KBDCR	When key is pressed, b7 is set by hardware.
@@ -35,44 +35,19 @@
  *	        Writing to DSP will set b7 by hardware.
  *              The termianl clear b7 after the character is accepted.
  * $D013	DSPCR	Unused.
- * -----------------------------------------------------------------------
+ * - BASIC ---------------------------------------------------------------
  * $E000        Apple I Integer BASIC
  * $E2B3        Re-entry address
  * $EFFF
  * -----------------------------------------------------------------------
- * $FF00        Monitor
- * $FFEF	Echo
+ * $FF00        WOZMON Monitor
+ * $FFEF		Echo
  * $FFFF	
  * ----------------------------------------------------------------------- 
- */
-/* Apple I 8K mode memory map
- * --------------------------------- 
- * Start Type
- * addr
- * --------------------------------- 
- * $0000 4KB RAM
- * $1000 unused
- * $D010 Display and Keyboard I/O
- * $D014 unused
- * $E000 4KB RAM
- * $F000 unused
- * $FF00 256B ROM^ (Woz Monitor)
- * ---------------------------------
- * ^ ROM can be written by Load core  
- */
-/* napple I 32K mode memory map
- * --------------------------------- 
- * Start Type
- * addr
- * --------------------------------- 
- * $0000 32K RAM
- * $8000 unused
- * $D010 Display and Keyboard I/O
- * $D014 unused
- * $E000 8K ROM^ 
- * ---------------------------------
- * ^ ROM can be written by Load core  
- */
+ * 8K machine has RAM from $0000 to $1FFF
+ * 4K+4K machine has RAM from $0000 to $0FFF and $E000 to $EFFF
+ * 32K machine has RAM from $0000 to $7FFF
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
