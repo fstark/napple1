@@ -495,7 +495,7 @@ int executeHelp( int argc, const char **argv );
 command_t commands[] = {
 	{ "help", executeHelp, "displays list of commands" },
 	{ "display", executeDisplay, "display speed [default|fast]" },
-	{ "memory", executeMemory, "memory reset (all memory is unallocated)\n\tmemory ram start end (allocate RAM)\n\tmemory rom <file> address (loads rom in memory)\n\tmemory rom32k <file> <jumpers> (load a 32KRAM/ROM image)" },
+	{ "memory", executeMemory, "memory reset (all memory is unallocated)\n\tmemory ram start end (allocate RAM)\n\tmemory rom <file> address (loads rom in memory)\n\tmemory rom32k <file> <jumpers> (load a 32KRAM/ROM image)\n\tdump" },
 	{ "type", executeType, "type [-sync] (@<filename>|string) - type the contents of a string or file" },
 	{ "exec", executeExec, "exec <file> - execute a command file" },
     { "cpu", executeCpu, "cpu [start|stop|reset|speed fast|speed default|trace on|trace off] - start, stop, reset, speedup or trace the CPU" },
