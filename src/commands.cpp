@@ -55,7 +55,6 @@ int executeQuit( int argc, const char **argv )
 
 int executeDisplay( int argc, const char **argv )
 {
-    extern int fastCpu;
     extern int fastDsp;
 
     argv++;
@@ -178,7 +177,7 @@ int executeMemory( int argc, const char **argv )
         // Loop over the mapping string
         // Each character corresponds to a bit in the mapping
         // 0->bit 0, 1->bit 1, ... 'a' or 'A' -> bit 10, 'b' or 'B' -> bit 11, etc.
-        for (int i = 0; i < strlen(mappingString); i++)
+        for (size_t i = 0; i < strlen(mappingString); i++)
         {
             char c = mappingString[i];
             if (c >= '0' && c <= '9')
@@ -282,7 +281,6 @@ int executeCpu( int argc, const char **argv )
     if (!strcmp(get_arg(argv,1),"speed"))
     {
         extern int fastCpu;
-        extern int fastDsp;
 
         if (!strcmp(get_arg(argv,2),"fast"))
         {
@@ -392,9 +390,9 @@ const char *getBoundCommand( int key )
 
 int uint16FromString( const char *s, uint16_t *num )
 {
-    int len;
+    size_t len;
 
-    if (sscanf(s, "%hx%n", num, &len) == 1)
+    if (sscanf(s, "%hx%ln", num, &len) == 1)
     {
         if (len == strlen(s))
             return 0;
@@ -405,9 +403,9 @@ int uint16FromString( const char *s, uint16_t *num )
 
 int addressFromString( const char *s, uint16_t *adrs )
 {
-    int len;
+    size_t len;
 
-    if (sscanf(s, "%hx%n", adrs, &len) == 1)
+    if (sscanf(s, "%hx%ln", adrs, &len) == 1)
     {
         if (len == strlen(s))
             return 0;
@@ -520,7 +518,7 @@ command_t commands[] = {
 int executeHelp( int argc, const char **argv )
 {
     console_printf( "List of emulator commands:\n" );
-    for (int i = 0; i < sizeof(commands)/sizeof(commands[0]); i++)
+    for (size_t i = 0; i < sizeof(commands)/sizeof(commands[0]); i++)
     {
         console_printf( "  %s: %s\n", commands[i].name, commands[i].help );
     }
@@ -538,7 +536,7 @@ int executeCommand( int argc, const char **argv )
     // If more than one matches, print an error message
     // If none matches, print an error message
     int match = -1;
-    for (int i = 0; i < sizeof(commands)/sizeof(commands[0]); i++)
+    for (size_t i = 0; i < sizeof(commands)/sizeof(commands[0]); i++)
     {
         if (strncmp( get_arg(argv,0), commands[i].name, strlen(get_arg(argv,0)) ) == 0)
         {
@@ -546,7 +544,7 @@ int executeCommand( int argc, const char **argv )
             {
                 console_printf( "Ambiguous command: '%s'\n    ", get_arg(argv,0) );
                 // print the possibilities
-                for (int j = 0; j < sizeof(commands)/sizeof(commands[0]); j++)
+                for (size_t j = 0; j < sizeof(commands)/sizeof(commands[0]); j++)
                 {
                     if (strncmp( get_arg(argv,0), commands[j].name, strlen(get_arg(argv,0)) ) == 0)
                         console_printf( "%s ", commands[j].name );

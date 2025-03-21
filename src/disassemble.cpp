@@ -127,7 +127,7 @@ const char *disassemble( uint16_t pc, const uint8_t *mem, int *len )
     switch (addressing[opcode])
     {
         case IMP:
-            snprintf( operands, sizeof(operands), "" );
+            strcpy( operands, "" );
             break;
         case IMM:
             snprintf( operands, sizeof(operands), "#$%02X", mem[1] );
