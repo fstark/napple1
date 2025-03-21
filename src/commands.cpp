@@ -14,7 +14,6 @@
 // The first element of each command is the command name
 // The second element is the function to execute
 // The third element is the help string
-// The next element is the number of arguments (minus the command name)
 typedef struct {
     const char *name;
     int (*function)(int argc, const char **argv);
