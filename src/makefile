@@ -1,40 +1,36 @@
 # napple1 makefile 
-# Nobu Hatano <nobuhatano@gmail.com>
-CC = gcc
-# CFLAGS = -Wall -ansi
-CFLAGS = -Wall -g
-THREAD = -lpthread
 
-# Support Linux and Cygwin
-OS = ${shell uname -o}
+CC = g++
+CFLAGS = -Wall # -Werror
+DEBUG_FLAGS = -g
+LIBS = -lpthread
+
+# List of source files
+SRC = m6502.c memory.c pia6820.c screen.c msgbuf.c keyboard.c main.c disassemble.c commands.c rom512.c symbols.c
+
+# Generate object files list from source files
+OBJ = $(SRC:.c=.o)
+
+# Generate dependency files list from source files
+DEP = $(SRC:.c=.d)
 
 all: ../napple1
 
-../napple1: m6502.o memory.o pia6820.o screen.o keyboard.o main.o msgbuf.o disassemble.o commands.o rom512.o symbols.o
-	$(CC) $(CFLAGS) -o ../napple1 m6502.o memory.o pia6820.o screen.o msgbuf.o keyboard.o main.o disassemble.o commands.o rom512.o symbols.o $(THREAD)
-m6502.o: m6502.c m6502.h pia6820.h memory.h disassemble.h
-	$(CC) $(CFLAGS) -o m6502.o -c m6502.c
-memory.o: memory.c pia6820.h memory.h pia6820.h screen.h 
-	$(CC) $(CFLAGS) -o memory.o -c memory.c
-pia6820.o: pia6820.c pia6820.h screen.h
-	$(CC) $(CFLAGS) -o pia6820.o -c pia6820.c
-screen.o: screen.c 
-	$(CC) $(CFLAGS) -o screen.o -c screen.c
-msgbuf.o: msgbuf.c screen.h memory.h
-	$(CC) $(CFLAGS) -o msgbuf.o -c msgbuf.c
-keyboard.o: keyboard.c keyboard.h m6502.h pia6820.h memory.h screen.h
-	$(CC) $(CFLAGS) -o keyboard.o -c keyboard.c 
-main.o: main.c keyboard.h m6502.h screen.h msgbuf.h memory.h
-	$(CC) $(CFLAGS) -o main.o  -c main.c
-disassemble.o: disassemble.c disassemble.h
-	$(CC) $(CFLAGS) -o disassemble.o  -c disassemble.c
-commands.o: commands.c commands.h
-	$(CC) $(CFLAGS) -o commands.o  -c commands.c
-rom512.o: rom512.c rom512.h
-	$(CC) $(CFLAGS) -o rom512.o  -c rom512.c
-symbols.o: symbols.c symbols.h
-	$(CC) $(CFLAGS) -o symbols.o  -c symbols.c
-clean: 
-	-rm *.o
-	-rm ../napple1
+debug: CFLAGS += $(DEBUG_FLAGS)
+debug: ../napple1
+
+../napple1: $(OBJ)
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+
+# Generic rule for compiling .c files to .o files
+%.o: %.c
+	$(CC) $(CFLAGS) -MMD -MP -o $@ -c $<
+
+# Include dependency files
+-include $(DEP)
+
+clean:
+	-rm -f $(OBJ)
+	-rm -f $(DEP)
+	-rm -f ../napple1
 
