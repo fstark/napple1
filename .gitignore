@@ -1,4 +1,5 @@
 *.o
+*.d
 core/
 trace.txt
 napple1
