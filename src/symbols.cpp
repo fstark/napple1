@@ -15,30 +15,7 @@ typedef struct symbolTable_t
     const char *locals[65536];  // Only visible to code between startAdrs and endAdrs
 }   symbolTable_t;
 
-// symbolTable_t wozmonSymbols = {
-//     0xff00, 0xFFFF,
-//     {
-//         [0xd010] = "KBD",
-//         [0xd011] = "KBDCR",
-//         [0xd012] = "DSP",
-//         [0xd013] = "DSPCR",
-//         [0xffef] = "ECHO",
-//     },
-//     {
-//         [0x24] = "XAML",
-//         [0x25] = "XAMH",
-//         [0x26] = "STL",
-//         [0x27] = "STH",
-//         [0x28] = "L",
-//         [0x29] = "H",
-//         [0x2a] = "YSAV",
-//         [0x2b] = "MODE",
-
-//         [0x200] = "IN"
-//     }
-// };
-
-int loadSymbolTable( symbolTable_t *symbols, const char *filename, u_int16_t startAdrs, u_int16_t endAdrs )
+int loadSymbolTable( symbolTable_t *symbols, const char *filename, uint16_t startAdrs, uint16_t endAdrs )
 {
     trace_printf( "Loading symbols from %s\n", filename );
 
@@ -260,7 +237,7 @@ const char *symbolTableLookup( symbolTable_t *me, uint16_t adrs, uint16_t pc )
         return NULL;
 
     static char buffer[256];
-    sprintf( buffer, "%s+1", res );
+    snprintf( buffer, sizeof(buffer), "%s+1", res );
 
     return buffer;
 }

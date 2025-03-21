@@ -32,26 +32,26 @@
 
 void print_msgbuf(char *s)
 {
-	char msg[MSG_LEN_MAX + 1]; 
+    char msg[MSG_LEN_MAX + 1]; 
 
-	if ((int)strlen(s) < 1)
-		sprintf(msg, "ESC Trace Reset Quit");
-	else
-		sprintf(msg, 
-			"%-40s", 
-			s);
-	printf( "INFO: %s", msg);
+    if ((int)strlen(s) < 1)
+        snprintf(msg, sizeof(msg), "ESC Trace Reset Quit");
+    else
+        snprintf(msg, sizeof(msg), 
+            "%-40s", 
+            s);
+    printf( "INFO: %s", msg);
 }
 
 void init_msgbuf(void)
 {
 }
 
-void gets_msgbuf(char *prompt, char *typed)
+void gets_msgbuf(const char *prompt, char *typed)
 {
-	ansi_red();
-	printf( "%s", prompt );
-	scanf("%256[^\n]", typed );
-	ansi_black();
+    ansi_red();
+    printf( "%s", prompt );
+    scanf("%256[^\n]", typed );
+    ansi_black();
 }
 

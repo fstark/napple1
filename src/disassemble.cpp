@@ -76,18 +76,18 @@ const char *stringFromZP( uint8_t adrs, uint16_t pc )
         return sym;
 
     static char buffer[256];
-    sprintf( buffer, "$%02X", adrs );
+    snprintf( buffer, sizeof(buffer), "$%02X", adrs );
     return buffer;
 }
 
-const char *stringFromAdrs( u_int16_t adrs, uint16_t pc )
+const char *stringFromAdrs( uint16_t adrs, uint16_t pc )
 {
     const char *sym = symbol( adrs, pc );
     if (sym)
         return sym;
 
     static char buffer[256];
-    sprintf( buffer, "$%04X", adrs );
+    snprintf( buffer, sizeof(buffer), "$%04X", adrs );
     return buffer;
 }
 
@@ -107,18 +107,18 @@ const char *disassemble( uint16_t pc, const uint8_t *mem, int *len )
     buffer[0] = 0;
     const char *symbolicPC = symbol( pc, pc );
     if (symbolicPC)
-        sprintf( buffer, "%s:\n", symbolicPC );
+        snprintf( buffer, sizeof(buffer), "%s:\n", symbolicPC );
 
     switch (byteCount[addressing[opcode]])
     {
         case 1:
-            sprintf( mem_buffer, "%02X      ", mem[0] );
+            snprintf( mem_buffer, sizeof(mem_buffer), "%02X      ", mem[0] );
             break;
         case 2:
-            sprintf( mem_buffer, "%02X %02X   ", mem[0], mem[1] );
+            snprintf( mem_buffer, sizeof(mem_buffer), "%02X %02X   ", mem[0], mem[1] );
             break;
         case 3:
-            sprintf( mem_buffer, "%02X %02X %02X", mem[0], mem[1], mem[2] );
+            snprintf( mem_buffer, sizeof(mem_buffer), "%02X %02X %02X", mem[0], mem[1], mem[2] );
             break;
         default:
             exit(-1);
@@ -127,50 +127,50 @@ const char *disassemble( uint16_t pc, const uint8_t *mem, int *len )
     switch (addressing[opcode])
     {
         case IMP:
-            sprintf( operands, "" );
+            snprintf( operands, sizeof(operands), "" );
             break;
         case IMM:
-            sprintf( operands, "#$%02X", mem[1] );
+            snprintf( operands, sizeof(operands), "#$%02X", mem[1] );
             break;
         case ZP0:
-            sprintf( operands, "%s", stringFromZP( mem[1], pc ) );
+            snprintf( operands, sizeof(operands), "%s", stringFromZP( mem[1], pc ) );
             break;
         case ZPX:
-            sprintf( operands, "%s,X", stringFromZP( mem[1], pc ) );
+            snprintf( operands, sizeof(operands), "%s,X", stringFromZP( mem[1], pc ) );
             break;
         case ZPY:
-            sprintf( operands, "%s,Y", stringFromZP( mem[1], pc ) );
+            snprintf( operands, sizeof(operands), "%s,Y", stringFromZP( mem[1], pc ) );
             break;
         case REL:
-            sprintf( operands, "%s", stringFromAdrs( pc+(signed char)mem[1]+2, pc ) );
+            snprintf( operands, sizeof(operands), "%s", stringFromAdrs( pc+(signed char)mem[1]+2, pc ) );
             break;
         case ABS:
-            sprintf( operands, "%s", stringFrom2Bytes( mem[1], mem[2], pc ) );
+            snprintf( operands, sizeof(operands), "%s", stringFrom2Bytes( mem[1], mem[2], pc ) );
             break;
         case ABX:
-            sprintf( operands, "%s,X", stringFrom2Bytes( mem[1], mem[2], pc ) );
+            snprintf( operands, sizeof(operands), "%s,X", stringFrom2Bytes( mem[1], mem[2], pc ) );
             break;
         case ABY:
-            sprintf( operands, "%s,Y", stringFrom2Bytes( mem[1], mem[2], pc ) );
+            snprintf( operands, sizeof(operands), "%s,Y", stringFrom2Bytes( mem[1], mem[2], pc ) );
             break;
         case IND:
-            sprintf( operands, "(%s)", stringFrom2Bytes( mem[1], mem[2], pc ) );
+            snprintf( operands, sizeof(operands), "(%s)", stringFrom2Bytes( mem[1], mem[2], pc ) );
             break;
         case IZX:
-            sprintf( operands, "(%s,X)", stringFromZP( mem[1], pc ) );
+            snprintf( operands, sizeof(operands), "(%s,X)", stringFromZP( mem[1], pc ) );
             break;
         case IZY:
-            sprintf( operands, "(%s),Y", stringFromZP( mem[1], pc ) );
+            snprintf( operands, sizeof(operands), "(%s),Y", stringFromZP( mem[1], pc ) );
             break;
         case N_A:
-            sprintf( operands, "????" );
+            snprintf( operands, sizeof(operands), "????" );
             break;
         default:
-        	console_printf( "CPU: %d\n", addressing[opcode] );
+            console_printf( "CPU: %d\n", addressing[opcode] );
             exit(-1);
     }
 
-    sprintf( buffer, "%s%04X: %s   %s %s", buffer, (int)pc, mem_buffer, opcodes[opcode], operands );
+    snprintf( buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), "%04X: %s   %s %s", (int)pc, mem_buffer, opcodes[opcode], operands );
 
     if (len)
         *len = byteCount[addressing[opcode]];
