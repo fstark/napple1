@@ -1820,7 +1820,7 @@ static void executeOpcode(void)
 	}
 }
 
-static int runM6502(void *data)
+static void *runM6502(void *data)
 {
 	while (1)
 	{
@@ -1851,7 +1851,7 @@ void startM6502(void)
 		gettimeofday(&t, NULL);
 		interval_start = (long long)(t.tv_usec / 1000 + 
 					     t.tv_sec * 1000);
-		pthread_create(&thread, NULL,(void *)&runM6502, NULL);	       
+		pthread_create(&thread, NULL,runM6502, NULL);	       
 	}
 }
 
