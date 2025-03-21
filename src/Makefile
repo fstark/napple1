@@ -1,3 +1,6 @@
+# Set default parallel build
+MAKEFLAGS += -j16
+
 # napple1 makefile 
 
 CC = g++
