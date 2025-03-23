@@ -346,6 +346,9 @@ unsigned char memRead(unsigned short address)
     if (address == 0xD013)
         return readDspCr();
 
+    // if (address>=0x1000 && address<0x2000)
+    //     return mem[address]|0b00010000;
+
     return mem[address];
 }
 

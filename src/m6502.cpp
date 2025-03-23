@@ -523,7 +523,6 @@ static void ROL_A(void)
 static void ROR(void)
 {
 	int newCarry;
-
 	btmp = memRead(op);
 	newCarry = btmp & 1;
 	btmp = (btmp >> 1) | (statusRegister & C ? 0x80 : 0);
@@ -541,7 +540,7 @@ static void ROR(void)
 static void ROR_A(void)
 {
 	tmp = accumulator | (statusRegister & C ? 0x100 : 0);
-	
+
 	if (accumulator & 1)
 		statusRegister |= C;
 	else

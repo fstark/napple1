@@ -8,7 +8,7 @@ memory rom rom/monitor.rom ff00
 memory rom rom/basic.rom e000
 
 ; Loads mandelbrot
-bload m.o65 0280
+bload ../mandelbrot65/mandelbrot65.o65 0280
 
 ; Starts mandelbrot checksum
-type "283R\n"
+type "280R\n"

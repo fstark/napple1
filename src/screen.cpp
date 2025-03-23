@@ -55,7 +55,7 @@ void init_screen(void)
 	newt = oldt;
 	newt.c_lflag &= ~(ICANON | ECHO);
 
-	raw_mode( 1 );
+	// raw_mode( 1 );
 	
 	// atexit((void (*)(void)) {
 	// 	tcsetattr(STDIN_FILENO, TCSANOW, &oldt);

@@ -55,7 +55,7 @@ int main( int argc, const char **argv )
 		}
 		else if (executeCommandFile(argv[1]))
 		{
-			fprintf( stderr, "Failed to execute file\n" );
+			fprintf( stderr, "Failed to execute boot file [%s] -- exiting\n", argv[1] );
 			exit(1);
 		}
 	}

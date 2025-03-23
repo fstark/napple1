@@ -371,6 +371,15 @@ const char *keyTable[256];
 // bind key command
 int executeBind( int argc, const char **argv )
 {
+    if (argc==1)
+    {
+        for (int i = 0; i < 256; i++)
+        {
+            if (keyTable[i])
+                console_printf( "    '%c' => '%s'\n", i, keyTable[i] );
+        }
+        return 0;
+    }
     if (argc < 3)
         return -1;
     int key = get_arg(argv, 1)[0];
