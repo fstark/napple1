@@ -14,17 +14,17 @@
     2000-7FFF : 2000-7FFF
     (with 6000-6FFF replicated at E000-EFFF)
 
-    Banks are swithced by any access to $A000-$BFFF.
+    Banks are switched by any access to $A000-$BFFF.
     The last nibble is the accessed page.
 */
 
 #include <stdint.h>
 
 //  Loads the ROM file
-int loadRom512( const char *rom512k );
+int loadRom512(const char *rom512k);
 
 //  Releases the loaded ROM
-void releaseRom512( void );
+void releaseRom512(void);
 
 //  Copy a bank of the ROM in memory (pass a pointer to a 6K block)
-int copyBank512( uint8_t bank, uint8_t *memory );
+int copyBank512(uint8_t bank, uint8_t *memory);

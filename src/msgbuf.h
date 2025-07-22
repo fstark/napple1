@@ -17,12 +17,12 @@
  *
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, 
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301,
  * USA.
  */
+
 void init_msgbuf(void);
 void print_msgbuf(char *string);
 void gets_msgbuf(const char *prompt, char *typed);
 
 #define MSG_LEN_MAX 256
-
