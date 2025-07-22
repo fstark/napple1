@@ -55,5 +55,8 @@ int copyBank512(uint8_t bank, uint8_t *memory)
     memcpy(memory + 0x8000, src, 8 * 1024);
     //  Duplicate 6000-6fff
     memcpy(memory + 0xe000, src + 0x6000, 4 * 1024);
+
+    printf("Copying bank %d to memory\n", bank);
+
     return 0;
 }
